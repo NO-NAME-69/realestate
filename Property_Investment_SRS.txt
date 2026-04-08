@@ -1,0 +1,738 @@
+Software Requirements Specification
+Property Investment Management System
+(RP Module)
+Version 1.0
+February 05, 2026
+Document Control
+Version Date Author Description
+1.0 Feb 05, 2026 System Analyst Initial Draft
+Table of Contents
+1. Introduction
+1.1 Purpose
+1.2 Scope
+1.3 Definitions, Acronyms, and Abbreviations
+1.4 References
+1.5 Overview
+2. Overall Description
+2.1 Product Perspective
+2.2 Product Functions
+2.3 User Classes and Characteristics
+2.4 Operating Environment
+2.5 Design and Implementation Constraints
+2.6 Assumptions and Dependencies
+3. System Features and Requirements
+Module 1: User Management Module
+Module 2: Team & Network Management Module
+Module 3: Wallet & Payment Management Module
+Module 4: Investment Management Module
+Module 5: Property & Project Management Module
+Module 6: Plot Inventory & Holding Module
+Module 7: User Dashboard Module
+Module 8: Sales & Execution Module
+Module 9: Profit Calculation & Distribution Module
+Module 10: Reinvestment & Revenue Flow Module
+Module 11: Reporting & Analytics Module
+Module 12: Admin Control & Configuration Module
+Module 13: Security & Compliance Module
+4. External Interface Requirements
+5. Non-Functional Requirements
+6. Other Requirements
+Appendices
+1. INTRODUCTION
+1.1 Purpose
+This SRS document specifies the complete requirements for the Property Investment Management System (RP
+Module), which enables users to invest in property projects through a team-based investment model with wallet
+management and profit distribution.
+1.2 Scope
+The system will manage:
+• User registration and team building
+• Investment wallet operations
+• Property project and plot management
+• Profit calculation and distribution
+• Admin controls and reporting
+1.3 Definitions, Acronyms, and Abbreviations
+KYC: Know Your Customer
+TSP: Town and Sector Planning
+ERP: Enterprise Resource Planning
+Admin: System Administrator
+Team Value: Total investment amount from all team members
+1.4 References
+• User requirements document
+• Business process flows
+• Financial regulations for investment platforms
+1.5 Overview
+This document provides detailed functional and non-functional requirements organized by module. Each
+module specification includes functional requirements with clear identifiers, input/output specifications, process
+flows, validation rules, and business logic.
+2. OVERALL DESCRIPTION
+2.1 Product Perspective
+A web-based investment management system enabling users to pool investments for property development
+projects with automated profit distribution. The system operates as a standalone application with integrations to
+third-party payment gateways, SMS/Email services, and cloud storage.
+2.2 Product Functions
+• User registration and team management (minimum 20 members per team)
+• Wallet-based investment handling with ■500 minimum
+• Property project lifecycle management
+• Plot inventory and holding system
+• Automated profit calculation and distribution
+• Comprehensive reporting and analytics
+2.3 User Classes and Characteristics
+User Type Technical Expertise Primary Functions
+Investor Low to Medium Register, invest, view returns
+Team Leader Medium Manage team, track investments
+Admin High System configuration, approvals, sales
+2.4 Operating Environment
+• Web-based application (responsive design)
+• Mobile compatible (iOS and Android browsers)
+• Cloud-hosted infrastructure
+• Database: MySQL/PostgreSQL
+• Backend: Node.js/Python/Java
+• Frontend: React/Angular/Vue.js
+2.5 Design and Implementation Constraints
+• Payment gateway integration required for secure transactions
+• Regulatory compliance for investment platforms (IT Act, RBI guidelines)
+• Data encryption for sensitive information (PAN, bank details)
+• Real-time transaction processing capability
+• Audit trail maintenance for all financial operations
+2.6 Assumptions and Dependencies
+• Users have internet connectivity and basic devices
+• Payment gateway services available 24/7
+• Legal approvals obtained before system launch
+• Users understand investment risks
+• Company handles all legal/regulatory compliance
+3. SYSTEM FEATURES AND REQUIREMENTS
+This section details all functional requirements organized by module. Each requirement includes a unique
+identifier, description, priority, process flow, inputs/outputs, and validation rules.
+MODULE 1: USER MANAGEMENT MODULE
+Purpose: Manage registration, activation, and user roles.
+3.1.1 Functional Requirements
+REQ-UM-001: User Registration
+Description: System shall allow new users to register with required information
+Priority: High
+Input:
+• Full Name
+• Email Address
+• Mobile Number
+• Password
+• Address
+• PAN Number (optional)
+Process:
+1. User fills registration form
+2. System validates all fields
+3. System checks for duplicate email/mobile
+4. Registration fee payment page displayed
+5. User pays ■500 registration fee
+6. System creates user account with 'Inactive' status
+7. Confirmation email/SMS sent
+Output: User account created with unique User ID
+Validation Rules:
+• Email must be valid format
+• Mobile must be 10 digits
+• Password minimum 8 characters with complexity
+• All mandatory fields required
+REQ-UM-002: Registration Fee Collection
+Description: System shall collect ■500 registration fee
+Priority: High
+Payment Methods: UPI, Net Banking, Card, Wallet
+Business Rule: Registration incomplete without payment
+REQ-UM-003: User Profile Creation
+System shall allow users to complete their profile with photo, DOB, occupation, bank details, and optional KYC
+documents
+REQ-UM-004: KYC Management
+System shall support optional KYC verification with Aadhaar, PAN, Driving License, or Passport
+REQ-UM-005: User Status Management
+System shall maintain user status: Inactive (newly registered) or Active (team of 20 completed)
+REQ-UM-006: Role Management
+System shall assign roles: Investor (default), Team Leader, or Admin with appropriate permissions
+REQ-UM-007: User Authentication
+System shall authenticate users securely with email/mobile + password, session management, and account
+lockout after 5 failed attempts
+REQ-UM-008: Password Management
+System shall allow password reset via OTP and password change with current password verification
+REQ-UM-009: User Logout
+System shall allow users to logout securely with session termination
+MODULE 2: TEAM & NETWORK MANAGEMENT MODULE
+Purpose: Build and track 20-member teams for user activation.
+REQ-TM-001: Team Creation
+System shall allow users to create a team with unique Team ID and referral link. One user can create only one
+team.
+REQ-TM-002: Team Member Invitation
+System shall allow team leaders to invite members via referral link, email, SMS, or WhatsApp. System auto-fills
+referrer information during registration.
+REQ-TM-003: Team Size Validation
+System shall validate minimum team size of 20 members. When count reaches 20, trigger activation logic.
+REQ-TM-004: User Activation Logic
+System shall activate users when team has 20 members. Status changes from Inactive to Active, enabling
+investment features.
+REQ-TM-005: Team Hierarchy Display
+System shall display team structure with tree/network view showing members, join dates, status, and
+investment amounts.
+REQ-TM-006: Referral Tracking
+System shall track all referral relationships storing referrer ID, referee ID, dates, and team assignments.
+REQ-TM-007: Team Value Calculation
+System shall calculate total team investment value as sum of all team members' investments in real-time.
+REQ-TM-008: Team Performance Dashboard
+System shall provide team performance metrics: total members, active/inactive, total investment, growth trend,
+top performers.
+REQ-TM-009: Team Member Management
+System shall allow viewing and managing team members with search, filter, and profile access. Team leader
+cannot remove members.
+MODULE 3: WALLET & PAYMENT MANAGEMENT MODULE
+Purpose: Handle all financial transactions with minimum ■500 investment and 24×7 payment availability.
+REQ-WM-001: Wallet Creation
+System shall auto-create wallet for each user upon registration with unique wallet ID and zero balance.
+REQ-WM-002: Registration Fee Payment
+System shall process ■500 registration fee via payment gateway with UPI, Card, Net Banking, or Wallet
+options.
+REQ-WM-003: Wallet Deposit/Top-up
+System shall allow users to add money with minimum ■500 deposit and no maximum limit.
+REQ-WM-004: Payment Modes and Frequency
+System shall support Anytime (24×7), Weekly, and Monthly payment modes with scheduled transactions.
+REQ-WM-005: Wallet Balance Display
+System shall display current balance, total deposits, investments, withdrawals, and available balance in
+real-time.
+REQ-WM-006: Transaction History/Ledger
+System shall maintain complete transaction history with ID, type, amount, status, timestamps, and balances.
+Export to PDF/Excel.
+REQ-WM-007: Payment Approval System
+System shall support admin approval for payments above threshold. Auto-approval for smaller amounts.
+REQ-WM-008: Investment from Wallet
+System shall deduct investment amount from wallet, validating sufficient balance and minimum ■500
+investment.
+REQ-WM-009: Profit Credit to Wallet
+System shall credit profit earnings to user wallet with transaction details and notifications.
+REQ-WM-010: Payment Gateway Integration
+System shall integrate with Razorpay/PayU/CCAvenue for PCI-DSS compliant transaction processing.
+REQ-WM-011: Wallet Withdrawal
+System shall allow withdrawal to registered bank account with minimum ■1000 and 3-5 business day
+processing (optional feature).
+REQ-WM-012: Transaction Security
+System shall ensure secure processing with SSL/TLS encryption, 2FA for high-value transactions, and
+comprehensive audit trail.
+MODULE 4: INVESTMENT MANAGEMENT MODULE
+Purpose: Control investment allocation based on user activation, team value, and wallet balance.
+REQ-IM-001: Link Wallet to Investment
+System shall link user wallet balance to investment functionality, transferring amount from wallet to investment.
+REQ-IM-002: Investment Eligibility Check
+System shall verify: User status Active, Team has 20+ members, Wallet balance ≥ ■500 before allowing
+investment.
+REQ-IM-003: Minimum Investment Validation
+System shall enforce minimum investment of ■500 with no maximum limit.
+REQ-IM-004: Investment Based on Team Value
+System shall allow higher investment opportunities based on team value (e.g., premium plots for higher team
+values).
+REQ-IM-005: Investment Tagging - Project-wise
+System shall tag investments to specific projects with Project ID, name, amount, date tracking.
+REQ-IM-006: Investment Tagging - Plot-wise
+System shall tag investments to specific plots. One investment can be split across multiple plots.
+REQ-IM-007: Investment Amount Tracking Per User
+System shall track total invested amount, active investments, project/plot breakdown, and history per user.
+REQ-IM-008: Investment Amount Tracking Per Team
+System shall track total team investment, average per member, top investors, project-wise allocation.
+REQ-IM-009: Re-investment from Returns
+System shall enable users to reinvest profit returns with full/partial amount options and auto-reinvest setting.
+REQ-IM-010: Investment Confirmation and Receipt
+System shall provide PDF receipt with investment ID, date, amount, project/plot details, emailed to user.
+REQ-IM-011: Investment Portfolio View
+System shall display complete portfolio with project/plot distribution, timeline, current value, expected returns.
+REQ-IM-012: Investment Modification/Cancellation
+System shall handle modifications with admin approval within policy timeframe (optional, may be disabled).
+MODULE 5: PROPERTY & PROJECT MANAGEMENT MODULE
+Purpose: Manage land, projects (Residential/Commercial/Resort/Hotel/Farmhouse), and development
+lifecycle.
+REQ-PM-001: Create Property Project
+Admin creates projects with name, type, location, area, costs, completion date, photos. Project types: Land,
+Resort, Hotel, Farmhouse.
+REQ-PM-002: Large Land Purchase Entry
+System records purchase details: seller info, area, price, survey numbers, legal documents, payment terms.
+REQ-PM-003: Legal Approval Tracking - TSP
+System tracks TSP approval: application date/number, status (Applied/Under Review/Approved/Rejected),
+approval documents.
+REQ-PM-004: Legal Approval Tracking - Government
+System tracks: Environmental, Fire NOC, Water, Electricity, Building plan, Occupation certificate, RERA
+registration.
+REQ-PM-005: Plotting & Layout Management
+System manages layout with blueprint upload, plot numbering, dimensions, types (Corner/Middle/Double-road),
+pricing.
+REQ-PM-006: Colony Development Status Tracking
+System tracks phases: Land acquisition, Legal approvals, Planning, Infrastructure, Amenities, Handover
+readiness.
+REQ-PM-007: Project Cost Tracking
+System tracks costs: Land purchase, Legal, Development, Construction, Marketing, Admin. Budget vs actual
+analysis.
+REQ-PM-008: Project Sales Tracking
+System tracks: Total/sold/held/available plots, sales value, received/pending amounts, sale dates, revenue.
+REQ-PM-009: Project Profitability Calculation
+System calculates: Total Revenue - Total Cost = Gross Profit. Shows ROI%, investor share calculation.
+REQ-PM-010: Project Status Management
+System maintains status: Planned, Land Acquired, Legal in Progress, Approved, Under Development, Ready
+for Sale, Completed, Closed.
+REQ-PM-011: Project Gallery Management
+System manages photos/videos with categories (Before/During/After), captions, featured image for
+transparency.
+REQ-PM-012: Project Reports
+System generates: Project summary, Financial (cost/sales/profit), Development progress, Plot status,
+Investor-wise investment, Timeline reports.
+MODULE 6: PLOT INVENTORY & HOLDING MODULE
+Purpose: Manage plots and temporary ownership (holding) based on team value and investment eligibility.
+REQ-PH-001: Plot Creation
+Admin creates plots with number, size, area, type (Corner/Middle/Double-road), facing, road width, price,
+location, features.
+REQ-PH-002: Plot Availability Status
+System maintains status: Available, Held (temporarily), Sold (final). Color-coded display on listings and layout
+map.
+REQ-PH-003: Plot Holding by Users
+Eligible users can hold plots temporarily. System records user ID, plot ID, hold dates, status with email/SMS
+confirmation.
+REQ-PH-004: Hold Eligibility - Team Value
+User can hold plots worth up to 50% of team value (configurable). Example: ■10L team value → ■5L hold
+capacity.
+REQ-PH-005: Hold Eligibility - Investment Amount
+User can hold plots worth up to 10x investment (configurable). System uses stricter of team value or investment
+limit.
+REQ-PH-006: Hold Validity & Duration
+Default 30-day hold period (configurable). Daily job checks expiries, releases plots, notifies users 3 days before
+expiry.
+REQ-PH-007: Hold Lock Rules
+Maximum X plots per user (e.g., 5). Only active users can hold. Cannot hold if outstanding dues. Specific error
+messages.
+REQ-PH-008: Plot Hold Release
+Manual release by user, Auto release on expiry, Admin release. Released plots immediately available.
+REQ-PH-009: Plot Comparison Feature
+System allows 2-4 plot comparison: size, type, facing, road width, price, location advantages. Direct hold from
+comparison.
+REQ-PH-010: Plot Details Page
+Display: Specifications, location map, photos, nearby amenities, status, legal info. Actions: Hold, watchlist,
+download, share.
+REQ-PH-011: Plot Search and Filter
+Filter by: Project, type, size range, price range, facing, status. Search by plot number. Sort by price/size.
+REQ-PH-012: Plot Availability Notification
+Users add plots to watchlist. System notifies via SMS/Email/App when plot becomes available.
+First-come-first-served.
+MODULE 7: USER DASHBOARD MODULE
+Purpose: Single interface for investors to view projects, plots, wallet, team, and eligibility.
+REQ-UD-001: Dashboard Overview
+Comprehensive dashboard with: Welcome banner, Quick stats, Wallet summary, Investment overview, Team
+summary, Activities, Notifications, Quick actions.
+REQ-UD-002: Quick Stats Display
+Display: Total investment, Total profit, Wallet balance, Team size, Team value, Plots held, Account status.
+Card-based with icons.
+REQ-UD-003: View Available Projects
+Display projects: Name, type, location, image, plots available, price range, status, eligibility indicator. Grid/list
+view with filters.
+REQ-UD-004: View Available Plots
+Display plots: Number, project, size/type, price, features, status, eligibility. List/Grid/Map views with actions.
+REQ-UD-005: Plot Comparison Interface
+Select 2-4 plots, compare side-by-side, highlight differences, hold directly from comparison.
+REQ-UD-006: Wallet Balance Display
+Prominent display: Current balance, Total deposited, Total invested, Profit received, Last transaction. Quick
+add money/view history.
+REQ-UD-007: Investment Overview
+Show: Total invested, Active count, Project distribution (pie chart), Latest transaction, Expected returns with
+charts.
+REQ-UD-008: Team Summary Display
+Show: Team size (current/20 required), Status, Progress bar, Team value, Referral count, Referral link with
+copy button.
+REQ-UD-009: Investment Eligibility Indicators
+Visual badges: Active/Inactive account, Wallet sufficient, Hold limit status. Color-coded, clear messages.
+REQ-UD-010: Profit & Returns Summary
+Display: Total profit, Project-wise breakdown, Recent credits, Expected returns, ROI%. Timeline and bar charts.
+REQ-UD-011: Recent Activities Feed
+Timeline of: Investments, Plots held, Profit received, Wallet transactions, Team joins, Status changes. Last
+10-15 activities.
+REQ-UD-012: Notifications Center
+Notification bell with count. Types: Team activation, Investment confirmation, Profit credit, Hold expiry, New
+projects, Announcements.
+REQ-UD-013: Quick Actions Menu
+Buttons for: Add Money, Invest, View Projects, Hold Plot, Invite Team, View Portfolio, Contact Support.
+REQ-UD-014: Dashboard Personalization
+Allow: Rearrange widgets, Show/hide sections, Set preferences, Color themes. Save preferences in database.
+REQ-UD-015: Mobile Responsive Dashboard
+Fully responsive: Stacked layout, Collapsible sections, Touch-friendly, Optimized charts, Bottom navigation.
+MODULE 8: SALES & EXECUTION MODULE (ADMIN-CONTROLLED)
+Purpose: Handle selling and execution responsibility. All selling handled by company, not investors.
+REQ-SE-001: Plot Sales Initiation
+Admin-only access to initiate sales. Select Available or Held plots, open sales form. Only admins can sell.
+REQ-SE-002: Buyer Management
+Manage buyer info: Name, email, mobile, address, PAN, Aadhaar, buyer type, company details, GSTIN.
+Maintain buyer master.
+REQ-SE-003: Sale Price Entry
+Enter: Base price, Negotiated price, Discount (with reason), Final price, Payment terms (Full/Installment). Warn
+if below cost.
+REQ-SE-004: Payment Schedule for Sales
+Support Full payment or Installments. Define: Number, amounts, due dates, interest, penalties. Track payment
+status.
+REQ-SE-005: Sale Confirmation
+Review details, verify buyer info, confirm sale. Updates plot to 'Sold', creates sale record, generates invoice,
+triggers profit calculation.
+REQ-SE-006: Documentation & Handover Tracking
+Track: Sale deed, signatures, receipts, encumbrance certificate, possession letter, registration. Update status
+and upload documents.
+REQ-SE-007: Sale Invoice Generation
+Auto-generate PDF invoice: Invoice number, company/buyer details, plot details, price breakup, GST, payment
+terms, bank details.
+REQ-SE-008: Sales Dashboard (Admin)
+Display: Total sales count/value, Plots available/held/sold, Pending payments, Monthly/yearly trends, Average
+price, Top projects.
+REQ-SE-009: Sales History & Reports
+Maintain complete sales history. Search/filter by project, buyer, date, status. Export sales summary and
+payment reports.
+REQ-SE-010: Company Responsibility Confirmation
+Enforce: Investors CANNOT sell plots. Only admin sales permission. No investor-to-buyer functionality. All
+sales logged.
+REQ-SE-011: Sales Communication Management
+Log communications: Inquiries, site visits, negotiations, documentation, payments, handover. Track history and
+reminders.
+REQ-SE-012: Plot Reservation (Pre-Sale)
+Admin can reserve plots before final sale. Collect token, set expiry (15 days). Reserved status prevents investor
+holding.
+MODULE 9: PROFIT CALCULATION & DISTRIBUTION MODULE
+Purpose: Automate profit sharing with transparent calculations and wallet credits.
+REQ-PC-001: Profit Calculation on Sale
+Formula: Gross Profit = Sale Price - Allocated Cost. Triggered on plot sale confirmation. Can be positive or
+negative.
+REQ-PC-002: Company Percentage Deduction
+Deduct company share (configurable %): Company Share = Gross Profit × %. Investor Pool = Gross Profit -
+Company Share.
+REQ-PC-003: Individual Investment-Based Calculation
+User Profit = Investor Pool × (User Investment / Total Project Investment). Sum equals investor pool.
+REQ-PC-004: Team Contribution-Based Calculation
+Optional team bonus based on team value/size. Bonus = Base Share × Bonus %. Funded from company share.
+REQ-PC-005: Profit Credit to Wallet
+Credit calculated profit to wallets. Create transaction, update balance, set type 'Profit - Sale of Plot X', send
+notification.
+REQ-PC-006: Profit Notification
+Send Email/SMS/In-app: Profit amount, project/plot details, investment, share %, transaction ID, new balance,
+reinvest CTA.
+REQ-PC-007: Profit Transparency Reports
+User report: Plot sold details, sale price, cost, profit, company share, pool, your investment/share/profit.
+Download PDF.
+REQ-PC-008: Profit Calculation Audit Trail
+Log: Timestamp, sale ID, input values, company %, calculated values, distribution, admin. For disputes and
+compliance.
+REQ-PC-009: Handle Loss Scenarios
+If sale < cost: Options: Company absorbs loss, Pro-rata to investors, Offset future profits. Transparent
+communication.
+REQ-PC-010: Profit Distribution History
+Maintain: Distribution ID, date, project/plot, total profit, investors count, per-investor amounts, status. User and
+admin views.
+REQ-PC-011: Profit Reinvestment Tracking
+Track profits reinvested vs withdrawn. Link: Original profit source → Reinvestment destination. Show
+compound growth.
+REQ-PC-012: Bulk Profit Distribution
+Handle multiple plot sales simultaneously. Aggregate profit by investor, single distribution, single notification
+with breakdown.
+MODULE 10: REINVESTMENT & REVENUE FLOW MODULE
+Purpose: Enable continuous investment cycle with manual and auto-reinvest options.
+REQ-RV-001: Team Revenue Accumulation
+Calculate team revenue = Sum of all team members' profit earnings. Update team dashboard, maintain running
+total.
+REQ-RV-002: Reinvestment into New Plots
+Users reinvest profit from wallet into new plots. Deduct from wallet, create investment, tag as 'Reinvested
+Profit'.
+REQ-RV-003: Reinvestment into New Projects
+Users invest in newly launched projects. Notify profitable investors. Track investment separately.
+REQ-RV-004: Manual Reinvestment Option
+User decides: Reinvest (browse projects/plots, invest) or Withdraw (transfer to bank). Profit stays in wallet until
+action.
+REQ-RV-005: Auto Reinvestment Option
+Optional auto-reinvest setting. User sets: Minimum amount, preferred project/plot types. System auto-invests
+when suitable opportunity found.
+REQ-RV-006: Revenue Tracking Project-wise
+Track per project: Total investment, plots sold, sales revenue, profit, distributions, company share, unsold plots,
+projected revenue.
+REQ-RV-007: Revenue Cycle Tracking
+Track full cycle: Initial investment → Allocation → Plot sale → Profit distribution → Reinvestment → Repeat.
+Show money flow visualization.
+REQ-RV-008: Team Revenue Reports
+Team leader reports: Total team investment/profit, Average ROI, Top contributors, Growth trend, Reinvestment
+vs withdrawal ratio.
+REQ-RV-009: Reinvestment Incentives Tracking
+Track incentives: Bonus interest, Priority plot access, Reduced fees, Loyalty rewards. Apply and record when
+user reinvests.
+REQ-RV-010: Cash Flow Management
+Admin dashboard: Inflows (deposits, sales), Outflows (land, development, distributions), Net position, Trends.
+Alert if negative/low.
+REQ-RV-011: Revenue Projection
+Project future revenue: Unsold plots × prices × expected sale probability. Admin dashboard with disclaimer. For
+business planning.
+MODULE 11: REPORTING & ANALYTICS MODULE
+Purpose: Provide insights and compliance tracking with comprehensive reports.
+REQ-RA-001: User-wise Investment Reports
+Report: User details, Registration date, Total/active investments, Project/plot breakdown, Timeline graph,
+Average amount, Frequency. PDF/Excel.
+REQ-RA-002: User-wise Profit Reports
+Report: Total profit, Project breakdown, Timeline, ROI%, Average per investment, Reinvested vs withdrawn,
+Top investments. Charts and PDF.
+REQ-RA-003: Team Performance Reports
+Report: Team leader, Size/growth, Total investment, Average per member, Profit, ROI, Active/inactive
+members, Top performers, Distribution chart.
+REQ-RA-004: Project-wise Profitability Reports
+Report: Project details, Land/development costs, Investment received, Plots sold/total, Sales revenue, Profit,
+Company/investor shares, ROI%, Margin.
+REQ-RA-005: Wallet & Transaction Reports
+User: All transactions, Type breakdown, Debits/credits, Balance, Average size. Admin: All wallet activity, Total
+in system, Volume trends, Fees, Failed transactions.
+REQ-RA-006: Legal & Approval Status Reports
+Track per project: Land acquisition, TSP, Government permissions status. Traffic light indicators, progress bars,
+overdue alerts.
+REQ-RA-007: Sales Performance Reports
+Metrics: Plots sold, Sales value, Sales by project/period, Average price, Time to sell, Velocity, Conversion rate,
+Top types, By admin.
+REQ-RA-008: Payment Collection Reports
+Track: Total collections, By period, Outstanding payments, Method breakdown, Failed transactions, Refunds,
+Net collections. For reconciliation.
+REQ-RA-009: User Activity Reports
+Metrics: Active users (daily/weekly/monthly), Login frequency, Time spent, Most viewed pages, Investment
+activity, Team building, Referral success, Dormant users.
+REQ-RA-010: ROI Analytics
+Calculate: Platform average ROI, Project-wise, User-wise, Time to ROI, Annualized ROI. Display with
+comparison charts.
+REQ-RA-011: Referral & Network Reports
+Metrics: Total referrals, Successful referrals, Conversion rate, Network depth/width, Top referrers, Growth
+trend. Network visualization.
+REQ-RA-012: Financial Reconciliation Reports
+All incoming/outgoing funds, Held funds, Invested funds, Gateway fees, Bank reconciliation, Discrepancies.
+Daily/monthly/quarterly Excel.
+REQ-RA-013: Custom Report Builder
+Admin tool: Select entities, metrics, dimensions, filters, visualization, save template, schedule automation. For
+ad-hoc analysis.
+REQ-RA-014: Report Export & Sharing
+Export: PDF, Excel, CSV. Share: Download, Email, Link (with expiry/access), Print. Schedule automated
+generation and email.
+REQ-RA-015: Dashboard for Admin Analytics
+Sections: Overview (users, investment, sales, profit), Recent activity, Trends, Top performers, Alerts, Quick
+reports. Customizable, real-time.
+MODULE 12: ADMIN CONTROL & CONFIGURATION MODULE
+Purpose: System-wide control with configurable parameters and audit logs.
+REQ-AC-001: Minimum Investment Configuration
+Admin configures minimum investment amount (>■100). Changes apply to future investments. Audit logged.
+REQ-AC-002: Company Profit Percentage Configuration
+Admin sets company profit share (0-100%). Preview impact, applies to new sales. Historical tracking. Audit
+logged.
+REQ-AC-003: Team Size Rules Configuration
+Configure: Min team size (default 20), max size, team value rules, hold multipliers. Changes may affect existing
+users with warnings.
+REQ-AC-004: Investment Approval Workflow
+Admin approves/rejects investments. Configurable rules: Above ■X, first investment, all, or none. User notified
+of decision.
+REQ-AC-005: User & Team Management
+Admin actions: View/search users, Edit details, Activate/deactivate, Reset password, Assign roles,
+Block/unblock, Delete. Team management included.
+REQ-AC-006: Project Management by Admin
+Full control: Create, edit, update status, add/modify plots, set pricing, enable/disable, close, archive. Bulk
+actions supported.
+REQ-AC-007: Plot Management by Admin
+Actions: Add plots, Edit details, Change status, Release holds, Reserve, Bulk upload (Excel), Delete (if no
+investments). Prevent sold plot changes.
+REQ-AC-008: Financial Configuration
+Configure: Registration fee, Gateway charges, Withdrawal fee/limits, Transaction limits, Currency, Tax settings
+(GST, TDS). Compliance ensured.
+REQ-AC-009: Notification Configuration
+Configure: Enable/disable types, Choose channels (Email/SMS/In-app), Customize templates, Set triggers,
+Schedule notifications.
+REQ-AC-010: Audit Logs & Access Control
+Log: Login/logout, Config changes, Approvals, Sales, Distributions, Modifications, Admin actions. RBAC with
+granular permissions. 3+ year retention.
+REQ-AC-011: System Configuration & Settings
+Categories: General, Investment, Team, Profit, Payments, Notifications, Legal, Support. Organized tabs,
+validation, export/import.
+REQ-AC-012: User Role & Permission Management
+Roles: Investor, Team Leader, Admin, Super Admin, Sales Manager, Finance Manager. Granular permissions,
+custom roles optional.
+REQ-AC-013: Backup & Data Export
+Automated backups (daily/weekly), manual trigger, cloud storage (AWS S3/Google), retention policy. Export to
+CSV/Excel, encrypted for sensitive data.
+REQ-AC-014: System Health Monitoring
+Monitor: Server uptime, Response time, DB performance, Disk space, Errors, Failed transactions, Gateway
+status. Real-time dashboard, email/SMS alerts.
+REQ-AC-015: Help & Support Management
+Manage: FAQs, How-to guides, Videos, User manual. Support tickets: Raise, respond, track status
+(Open/Progress/Resolved), assign, prioritize.
+MODULE 13: SECURITY & COMPLIANCE MODULE
+Purpose: Ensure system safety with encryption, authentication, and regulatory compliance.
+REQ-SC-001: Role-Based Access Control
+Define roles and permissions. Enforce checks on all actions. Backend validates, frontend hides unauthorized
+actions. Log unauthorized attempts.
+REQ-SC-002: Transaction Security
+HTTPS/SSL, PCI-DSS compliance, tokenization, no full card storage, transaction signing, replay prevention,
+session timeout, 2FA for high-value, fraud detection.
+REQ-SC-003: Data Encryption
+In Transit: TLS 1.2+. At Rest: Passwords (bcrypt/Argon2), PAN/Aadhaar/Bank (AES-256). Secure key
+management, rotation policy.
+REQ-SC-004: Audit Trail
+Comprehensive logging: All CRUD on sensitive data, failed logins, IP/user agent. Tamper-proof append-only
+logs. 3+ year retention.
+REQ-SC-005: Authentication & Password Security
+Min 8 chars with complexity, strength indicator, prevent weak passwords. Lockout after 5 failures (30 min).
+CAPTCHA after 3. Secure reset with OTP.
+REQ-SC-006: Session Management
+Secure tokens, HttpOnly cookies, 30-min inactivity timeout, 12-hr absolute timeout. Logout invalidates. Prevent
+hijacking: bind to IP, regenerate on login.
+REQ-SC-007: Input Validation & Sanitization
+Frontend and mandatory backend validation. Whitelist approach, type/range/format checking. Prevent SQL
+injection (parameterized queries), XSS (escape output, CSP), command injection.
+REQ-SC-008: Legal Compliance Support
+Data protection (IT Act, consent, access/delete rights), Financial (RBI, AML, KYC), Investment (risk disclosure,
+T&C;, RERA), Tax (TDS, reports). Compliance reports.
+REQ-SC-009: Secure File Upload & Storage
+Validate type (whitelist), malware scan, size limits, rename files, store outside web root, controlled download.
+Cloud storage with encryption.
+REQ-SC-010: DDoS & Brute Force Protection
+Rate limiting, CAPTCHA, WAF, IP blacklisting, CDN with DDoS protection, traffic monitoring. Account lockout,
+progressive delays.
+REQ-SC-011: Third-Party Integration Security
+API keys in environment/secret manager, HTTPS for all calls, webhook signature verification, least privilege,
+monitor health, fallback services.
+REQ-SC-012: Security Testing & Vulnerability Management
+Code reviews, SAST, DAST, penetration testing (annual), dependency scanning. Track vulnerabilities, prioritize
+by severity, patch critical immediately.
+REQ-SC-013: Incident Response Plan
+Detection/alerting, classification, response team, escalation, containment, investigation, remediation,
+communication, post-incident review. Playbook and drills.
+REQ-SC-014: Data Backup & Disaster Recovery
+Daily automated backups, hourly incremental, weekly full, off-site/cloud encrypted storage, integrity testing.
+RTO: 4 hours, RPO: 24 hours. DR procedures and drills.
+REQ-SC-015: Privacy & Data Minimization
+Collect only necessary data, clear privacy policy, marketing consent, opt-out, anonymize analytics, right to
+access/delete. Retain per legal requirements, purge unnecessary data.
+4. EXTERNAL INTERFACE REQUIREMENTS
+4.1 User Interfaces
+The system shall provide a responsive web-based user interface compatible with desktop, tablet, and mobile
+devices. Key requirements include:
+• Responsive design working on all device sizes
+• Browser compatibility: Chrome, Firefox, Safari, Edge (latest versions)
+• WCAG 2.1 Level AA accessibility compliance
+• Clean, modern, professional design with consistent branding
+• User-friendly error messages and success confirmations
+• Loading indicators for all data operations
+4.2 Hardware Interfaces
+Not Applicable. This is a web-based application accessible from any standard computing device (computer,
+smartphone, tablet) with internet connectivity.
+4.3 Software Interfaces
+Payment Gateway Integration: Razorpay/PayU/CCAvenue via REST API over HTTPS for secure transaction
+processing with webhook support.
+SMS Gateway: Twilio/MSG91/Fast2SMS via REST API for OTP and notifications.
+Email Service: SendGrid/Amazon SES/Mailgun via REST API or SMTP for notifications and invoices.
+Cloud Storage: AWS S3/Google Cloud Storage/Azure Blob for document and image storage.
+Database: PostgreSQL or MySQL with native drivers or ORM (Sequelize, TypeORM, Django ORM).
+4.4 Communication Interfaces
+Network Protocols: All client-server communication over HTTPS (TLS 1.2+). Optional WebSockets for
+real-time notifications.
+API Architecture: RESTful API with JSON data format, JWT or session-based authentication, versioned
+endpoints (/api/v1/).
+5. NON-FUNCTIONAL REQUIREMENTS
+5.1 Performance Requirements
+Metric Requirement
+Page Load Time < 3 seconds on standard broadband
+API Response Time < 1 second for 95% of requests
+Search & Filter Results within 2 seconds
+Report Generation < 10 sec (standard), < 60 sec (complex)
+Concurrent Users Minimum 1,000 without degradation
+Transaction Processing Minimum 50 per second
+Peak Load Handling 3x normal load capacity
+5.2 Safety Requirements
+• Regular automated backups with 4-hour RTO (Recovery Time Objective)
+• Transaction logging for all financial operations
+• Graceful degradation: Non-critical features can fail without affecting core functions
+• Idempotency for financial transactions to prevent duplicate charges
+• Double-entry bookkeeping for wallet operations
+• Daily reconciliation checks
+5.3 Security Requirements
+Comprehensive security requirements detailed in Module 13: Security & Compliance. Key aspects include:
+Authentication and authorization, data encryption (at rest and in transit), input validation, protection against SQL
+injection/XSS/CSRF, audit logging, and regulatory compliance.
+5.4 Software Quality Attributes
+Attribute Requirement
+Reliability - Uptime 99.5% SLA (~3.65 hours downtime/month)
+Reliability - MTBF > 720 hours (30 days)
+Reliability - MTTR < 2 hours for critical issues
+Availability 24/7 except planned maintenance (48hr notice)
+Maintainability Modular code, 70%+ unit test coverage, CI/CD
+Usability First investment within 10 minutes, minimal training
+Portability Platform/browser independent, cloud deployable
+Testability Unit, integration, E2E, and load testing
+6. OTHER REQUIREMENTS
+6.1 Legal & Regulatory Requirements
+Terms & Conditions: Mandatory acceptance during registration covering obligations, rights, liability, dispute
+resolution.
+Privacy Policy: Data collection, usage, storage, sharing, user rights per IT Act 2000.
+Risk Disclosure: Clear disclosure of investment risks, no guaranteed returns, shown before first investment.
+RERA Compliance: If applicable, RERA registration for projects, display registration numbers, escrow
+accounts.
+KYC & AML: If required, implement identity verification and anti-money laundering checks for large
+transactions.
+6.2 Business Rules Summary
+• Minimum registration fee: ■500 (non-refundable)
+• Minimum investment: ■500 (configurable by admin)
+• Team activation requires exactly 20 members
+• Only active users can invest and hold plots
+• Plot holding eligibility based on team value and investment amount
+• Only company/admin can sell plots (investors cannot)
+• Profit distribution based on proportional investment
+• Company profit percentage deducted before investor distribution
+6.3 Assumptions
+• Users have internet access and basic computing devices
+• Users have valid bank accounts and payment methods
+• Payment gateway services operational 24/7
+• Legal approvals for land obtained by company
+• Users understand basic investment concepts and risks
+• Company handles all legal and regulatory compliance
+6.4 Dependencies
+• Third-party service availability (payment gateway, SMS/Email, cloud storage)
+• Regulatory compliance with current and future laws
+• Hosting infrastructure (cloud or on-premises)
+• Accurate land records and legal documentation
+APPENDICES
+Appendix A: Glossary
+Active User: User whose team has minimum 20 members and can invest
+Company Share: Percentage of profit retained by company from plot sales
+Hold: Temporary reservation of plot by eligible user without purchase
+Investor Share Pool: Profit amount after company share deduction, distributed to investors
+Plot Allocation: Assignment of investment to specific plot(s)
+ROI: Return on Investment (profit as percentage of investment)
+Team Leader: User who created a team
+Team Value: Total investment amount by all team members
+TSP: Town and Sector Planning approval
+Wallet: Digital account holding user's funds for investment
+Appendix B: Acronyms
+Acronym Full Form
+2FA Two-Factor Authentication
+AML Anti-Money Laundering
+API Application Programming Interface
+GST Goods and Services Tax
+HTTPS Hypertext Transfer Protocol Secure
+JWT JSON Web Token
+KYC Know Your Customer
+OTP One-Time Password
+PAN Permanent Account Number
+RBAC Role-Based Access Control
+RERA Real Estate Regulation and Development Act
+REST Representational State Transfer
+ROI Return on Investment
+SRS Software Requirements Specification
+TDS Tax Deducted at Source
+TSP Town and Sector Planning
+Appendix C: Key Data Models
+The following high-level data models will be detailed during the design phase:
+• Users: user_id, name, email, mobile, password_hash, status, role, created_at
+• Teams: team_id, team_leader_id, team_name, member_count, team_value
+• Wallets: wallet_id, user_id, balance, created_at
+• Transactions: transaction_id, wallet_id, type, amount, timestamp, status
+• Projects: project_id, name, type, location, status, total_area, cost
+• Plots: plot_id, project_id, plot_number, size, price, type, status
+• Investments: investment_id, user_id, project_id, plot_id, amount, date
+• Plot_Holds: hold_id, user_id, plot_id, hold_start, hold_expiry, status
+• Sales: sale_id, plot_id, buyer_id, sale_price, sale_date, payment_status
+• Profit_Distributions: distribution_id, sale_id, user_id, amount, date
+APPROVAL & SIGN-OFF
+Role Name Signature Date
+Business Owner
+Project Manager
+System Analyst
+Lead Developer
+QA Lead
+REVISION HISTORY
+Version Date Author Changes
+1.0 Feb 05, 2026 System Analyst Initial SRS document created
+END OF DOCUMENT

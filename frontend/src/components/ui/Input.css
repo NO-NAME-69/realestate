@@ -1,0 +1,101 @@
+/* src/components/ui/Input.css */
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  width: 100%;
+}
+
+.input-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.input-required {
+  color: var(--danger);
+  margin-left: 0.25rem;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transition: all var(--transition-fast);
+}
+
+.input-field {
+  width: 100%;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.625rem 1rem;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.input-field.has-left-icon {
+  padding-left: 2.5rem;
+}
+
+.input-field.has-right-icon {
+  padding-right: 2.5rem;
+}
+
+.input-field::placeholder {
+  color: var(--text-tertiary);
+}
+
+.input-field:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 1px var(--accent-gold);
+  background-color: var(--bg-primary);
+}
+
+.input-field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--bg-tertiary);
+}
+
+.input-icon-left {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.input-icon-right {
+  position: absolute;
+  right: 0.75rem;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.input-error-state .input-field {
+  border-color: var(--danger);
+}
+
+.input-error-state .input-field:focus {
+  box-shadow: 0 0 0 1px var(--danger);
+}
+
+.input-error-state .input-icon-left,
+.input-error-state .input-icon-right {
+  color: var(--danger);
+}
+
+.input-error-text {
+  font-size: 0.75rem;
+  color: var(--danger);
+  margin-top: 0.125rem;
+}

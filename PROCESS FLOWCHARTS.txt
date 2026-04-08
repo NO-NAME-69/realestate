@@ -1,0 +1,449 @@
+PROCESS FLOWCHARTS
+Property Investment Management System
+(RP Module)
+Version 1.0 | February 2026
+Table of Contents
+1. User Registration Flow
+2. Team Building & Activation Flow
+3. Wallet Top-up Flow
+4. Investment Process Flow
+5. Plot Holding Flow
+6. Sales & Profit Distribution Flow
+7. Reinvestment Flow
+8. Admin Project Creation Flow
+9. Complete System Flow (Overview)
+1. USER REGISTRATION FLOW
+START
+↓
+User visits
+registration page
+↓
+Fill registration form:
+Name, Email, Mobile,
+Password, Address
+↓
+System validates
+input fields
+↓
+Email/Mobile
+already exists?
+YES ↓ NO ↓
+Show error:
+Email/Mobile
+already registered
+Redirect to
+payment gateway
+↓
+User pays ■500
+registration fee
+↓
+Payment
+successful?
+NO ↓ YES ↓
+Show error &
+retry option
+Create user account
+Status: Inactive
+Create wallet
+↓
+Send confirmation
+Email/SMS
+↓
+END
+2. TEAM BUILDING & ACTIVATION FLOW
+START
+↓
+User clicks
+'Create Team'
+(First time)
+↓
+System generates:
+- Team ID
+- Referral Link
+↓
+User becomes
+Team Leader
+↓
+Team Leader shares
+referral link
+(Email/SMS/WhatsApp)
+↓
+New user clicks link
+& registers
+(pays ■500)
+↓
+System adds member
+to team
+Team count++
+↓
+Team size
+≥ 20 members?
+NO ↓ YES ↓
+Show progress:
+'X/20 members'
+Continue inviting
+ACTIVATE Team Leader:
+Status: Inactive→Active
+Enable investment
+Enable plot holding
+ ↓
+Send notification:
+'Team activated!
+You can now invest'
+↓
+END
+3. WALLET TOP-UP FLOW
+START
+↓
+User clicks
+'Add Money to Wallet'
+↓
+Enter amount
+(Min: ■500)
+↓
+Amount
+≥ ■500?
+NO ↓ YES ↓
+Show error:
+'Min amount ■500'
+Select payment mode:
+Anytime/Weekly/
+Monthly
+↓
+Redirect to
+Payment Gateway
+(UPI/Card/NetBank)
+↓
+User completes
+payment
+↓
+Payment
+successful?
+NO ↓ YES ↓
+Show error &
+retry option
+Update wallet balance
+Create transaction
+record
+Send receipt
+↓
+Send notification:
+'■X added to wallet
+New balance: ■Y'
+↓
+END
+4. INVESTMENT PROCESS FLOW
+START
+↓
+User views
+available projects
+↓
+Select project
+& click 'Invest'
+↓
+User status
+= Active?
+NO ↓ YES ↓
+Show error:
+'Complete team of 20
+to activate account'
+Enter investment
+amount
+ ↓
+Amount ≥ ■500
+AND
+Amount ≤ Wallet?
+NO ↓ YES ↓
+Show error:
+'Min ■500' or
+'Insufficient balance'
+Select plot(s)
+for investment
+(optional)
+↓
+User confirms
+investment
+↓
+System:
+- Deducts from wallet
+- Tags to project/plot
+- Creates investment record
+↓
+Generate & send:
+- Investment receipt
+- Email confirmation
+↓
+END
+5. PLOT HOLDING FLOW
+START
+↓
+User browses
+available plots
+↓
+Select plot &
+click 'Hold Plot'
+↓
+User status
+= Active?
+NO ↓ YES ↓
+Show error:
+'Activate account
+first'
+Check eligibility:
+Plot value ≤ 50%
+of team value OR
+10x investment
+ ↓
+Eligible to
+hold plot?
+NO ↓ YES ↓
+Show error:
+'Hold limit exceeded
+Based on team value
+or investment'
+Plot status
+= Available?
+ ↓
+YES: Change plot
+status to 'Held'
+Set 30-day expiry
+Record hold details
+↓
+Send notification:
+'Plot X held for
+30 days'
+↓
+END
+6. SALES & PROFIT DISTRIBUTION FLOW
+START
+↓
+Admin selects plot
+& clicks 'Initiate Sale'
+↓
+Enter buyer details:
+Name, contact, PAN,
+Aadhaar
+↓
+Enter sale price &
+payment terms
+(Full/Installment)
+↓
+Admin confirms
+sale
+↓
+System:
+- Changes plot to 'Sold'
+- Generates invoice
+- Creates sale record
+↓
+PROFIT CALCULATION:
+Sale Price - Cost
+= Gross Profit
+↓
+Deduct Company %
+↓
+Calculate investor shares:
+Each investor share =
+(Investor Pool) ×
+(Their Investment /
+Total Investment)
+↓
+Credit profit to
+each investor's wallet
+Create transaction
+records
+↓
+Send notifications:
+'Profit ■X credited
+from Plot Y sale'
+↓
+END
+7. REINVESTMENT FLOW
+START
+↓
+Profit credited
+to user wallet
+from plot sale
+↓
+User notification:
+'Profit ■X credited'
+with Reinvest button
+↓
+User wants to
+reinvest?
+NO ↓ YES ↓
+Profit stays
+in wallet
+for withdrawal
+User clicks
+'Reinvest'
+button
+ ↓
+Browse new projects
+& plots
+↓
+Select project/plot
+Enter reinvestment
+amount
+↓
+System:
+- Deducts from wallet
+- Creates investment
+- Tags as 'Reinvested'
+↓
+Track:
+Original profit source
+→ New investment
+↓
+Send confirmation:
+'■X reinvested in
+Project Y'
+↓
+END
+8. ADMIN PROJECT CREATION FLOW
+START
+↓
+Admin logs in
+& navigates to
+'Create Project'
+↓
+Enter project details:
+Name, Type, Location,
+Area, Cost, Timeline,
+Photos, Documents
+↓
+Upload legal
+documents &
+layout plan
+↓
+System validates
+& creates project
+Status: 'Planned'
+↓
+Add plots to project:
+Plot numbers, sizes,
+types, prices
+(Manual or Bulk)
+↓
+Set plot attributes:
+Corner/Middle,
+Facing, Road width
+↓
+Track legal approvals:
+TSP application
+Government permissions
+RERA registration
+↓
+All approvals
+received?
+NO ↓ YES ↓
+Status:
+'Legal in Progress'
+Continue tracking
+Status:
+'Ready for Sale'
+Enable for
+investment & holding
+ ↓
+Notify users:
+'New project
+available!'
+↓
+END
+9. COMPLETE SYSTEM FLOW (OVERVIEW)
+This flowchart shows the complete end-to-end system flow integrating all modules:
+USER
+REGISTRATION
+■500 fee
+↓
+Inactive status
+→
+TEAM
+BUILDING
+Invite 20
+members
+↓
+Activation
+→
+WALLET
+TOP-UP
+Min ■500
+↓
+Ready to invest
+↓ ↓ ↓
+INVESTMENT
+Select project
+↓
+Wallet deducted
+←
+PLOT
+HOLDING
+Hold eligible
+plots for 30 days
+→
+ADMIN
+PROJECT
+Create projects
+& plots
+↓ ↓
+PROFIT
+DISTRIBUTION
+Proportional
+to investment
+←
+SALES
+(Admin only)
+Sell plots
+↓
+Generate profit
+LEGAL
+APPROVALS
+TSP, Govt
+permissions
+↓
+REINVESTMENT
+Profit → Wallet
+→ New projects
+REPORTS &
+ANALYTICS
+User & Admin
+dashboards
+LEGEND & KEY POINTS:
+• User Journey: Registration → Team Building → Wallet Top-up → Investment → Profit → Reinvestment
+• Admin Journey: Create Projects → Add Plots → Track Approvals → Sell Plots → Distribute Profits
+• Key Rule: User must be ACTIVE (20-member team) to invest or hold plots
+• Profit Formula: (Sale Price - Cost) × (User Investment / Total Investment) after company %
+• Hold Eligibility: Based on Team Value (50%) or Investment Amount (10x)
+• Investment Cycle: Continuous loop from Investment → Sale → Profit → Reinvestment
+FLOWCHART SUMMARY
+Flowchart Key Decision Points End Result
+1. User Registration • Email/Mobile unique?
+• Payment successful?
+Account created (Inactive)
+2. Team Building • Team size ≥ 20? User activated
+3. Wallet Top-up • Amount ≥ ■500?
+• Payment successful?
+Wallet funded
+4. Investment • User active?
+• Amount valid?
+• Sufficient balance?
+Investment recorded
+5. Plot Holding • User active?
+• Eligible?
+• Plot available?
+Plot held for 30 days
+6. Sales & Profit • Sale confirmed?
+• Profit calculated?
+Profit distributed
+7. Reinvestment • User chooses reinvest? Profit reinvested
+8. Project Creation • Approvals received? Project live
+9. System Overview All flows integrated Complete ERP system
+COLOR CODING GUIDE:
+ab.graphics.shapes.Rect object at 0x7ef86193d550> Start/End points & Success states
+ab.graphics.shapes.Rect object at 0x7ef86193d580> Process steps & User actions
+ab.graphics.shapes.Rect object at 0x7ef86193c3e0> System processing & Validation
+ab.graphics.shapes.Rect object at 0x7ef86193d5e0> Decision points (Yes/No)
+ab.graphics.shapes.Rect object at 0x7ef86193d670> Error states & Rejection
+ab.graphics.shapes.Rect object at 0x7ef86193d700> Financial calculations
+ab.graphics.shapes.Rect object at 0x7ef86193d790> Waiting/Pending states
+END OF FLOWCHARTS

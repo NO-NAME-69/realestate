@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropVault — Property Investment Management</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --primary-dark: #1d4ed8;
+    --success: #16a34a;
+    --success-light: #f0fdf4;
+    --warning: #d97706;
+    --warning-light: #fffbeb;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --purple: #7c3aed;
+    --purple-light: #f5f3ff;
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --border-light: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --sidebar-bg: #0f172a;
+    --sidebar-text: #94a3b8;
+    --sidebar-active: #2563eb;
+    --sidebar-hover: #1e293b;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 4px 16px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --sidebar-width: 240px;
+    --topbar-height: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .app { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: width .25s ease, transform .25s ease;
+    overflow: hidden;
+  }
+  .sidebar.collapsed { width: 64px; }
+
+  .sidebar-logo {
+    height: var(--topbar-height);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 18px;
+    border-bottom: 1px solid #1e293b;
+    flex-shrink: 0;
+  }
+  .logo-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--primary); display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 18px; height: 18px; fill: white; }
+  .logo-text { font-weight: 700; font-size: 16px; color: white; white-space: nowrap; }
+  .logo-sub { font-size: 10px; color: var(--sidebar-text); letter-spacing: .5px; }
+
+  .sidebar-nav { flex: 1; padding: 12px 8px; overflow-y: auto; }
+  .nav-group-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1px;
+    color: #475569; text-transform: uppercase;
+    padding: 8px 10px 4px; white-space: nowrap;
+  }
+  .sidebar.collapsed .nav-group-label { opacity: 0; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 8px;
+    cursor: pointer; transition: all .15s;
+    color: var(--sidebar-text); margin-bottom: 2px;
+    white-space: nowrap;
+  }
+  .nav-item:hover { background: var(--sidebar-hover); color: white; }
+  .nav-item.active { background: var(--primary); color: white; }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .nav-label { font-weight: 500; font-size: 13.5px; }
+  .sidebar.collapsed .nav-label { display: none; }
+
+  .nav-badge {
+    margin-left: auto; background: #dc2626;
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 20px;
+  }
+  .sidebar.collapsed .nav-badge { display: none; }
+
+  .sidebar-footer {
+    padding: 12px 8px; border-top: 1px solid #1e293b;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: fixed; top: 0;
+    left: var(--sidebar-width); right: 0;
+    height: var(--topbar-height);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 24px; z-index: 90;
+    transition: left .25s;
+  }
+  .topbar.sidebar-collapsed { left: 64px; }
+
+  .topbar-toggle {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid var(--border); background: transparent;
+    cursor: pointer; display: grid; place-items: center;
+    color: var(--text-secondary); transition: all .15s;
+  }
+  .topbar-toggle:hover { background: var(--bg); }
+
+  .search-bar {
+    flex: 1; max-width: 480px;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 0 14px; height: 38px;
+    transition: border-color .15s;
+  }
+  .search-bar:focus-within { border-color: var(--primary); background: white; }
+  .search-bar svg { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
+  .search-bar input { flex: 1; border: none; background: transparent; outline: none; font-family: inherit; font-size: 13.5px; color: var(--text-primary); }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-kbd { font-size: 11px; color: var(--text-muted); background: var(--border-light); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: 'DM Mono', monospace; }
+
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 9px;
+    border: 1px solid var(--border); background: transparent;
+    cursor: pointer; display: grid; place-items: center;
+    color: var(--text-secondary); position: relative; transition: all .15s;
+  }
+  .icon-btn:hover { background: var(--bg); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--danger); border: 2px solid white;
+  }
+
+  .admin-chip {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 4px 12px 4px 6px; cursor: pointer;
+    transition: all .15s; background: transparent;
+  }
+  .admin-chip:hover { background: var(--bg); }
+  .admin-avatar {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg,#2563eb,#7c3aed);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700; color: white;
+  }
+  .admin-info { text-align: left; }
+  .admin-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+  .admin-role { font-size: 11px; color: var(--text-muted); }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    margin-left: var(--sidebar-width);
+    margin-top: var(--topbar-height);
+    min-height: calc(100vh - var(--topbar-height));
+    transition: margin-left .25s;
+  }
+  .main.sidebar-collapsed { margin-left: 64px; }
+
+  .page { display: none; padding: 28px 28px 40px; }
+  .page.active { display: block; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; gap: 16px; }
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+  .page-subtitle { font-size: 13.5px; color: var(--text-secondary); margin-top: 3px; }
+  .header-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: 9px; font-family: inherit;
+    font-size: 13.5px; font-weight: 600; cursor: pointer;
+    border: none; transition: all .15s; text-decoration: none;
+  }
+  .btn svg { width: 15px; height: 15px; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(37,99,235,.3); }
+  .btn-secondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border: 1px solid transparent; padding: 7px 12px; }
+  .btn-ghost:hover { background: var(--bg); color: var(--text-primary); }
+  .btn-sm { padding: 6px 12px; font-size: 12.5px; border-radius: 7px; }
+
+  /* ── STAT CARDS ── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 20px 22px; border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm); transition: all .2s; cursor: default;
+  }
+  .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+  .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .stat-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .5px; }
+  .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; }
+  .stat-icon svg { width: 18px; height: 18px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); letter-spacing: -1px; }
+  .stat-change { font-size: 12px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+  .stat-change.up { color: var(--success); }
+  .stat-change.down { color: var(--danger); }
+  .stat-change svg { width: 12px; height: 12px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    padding: 18px 22px; border-bottom: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .card-subtitle { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+  .card-body { padding: 20px 22px; }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-65-35 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 16px; }
+
+  /* ── CHART PLACEHOLDER ── */
+  .chart-container { position: relative; }
+  .chart-canvas { width: 100%; height: 220px; border-radius: 8px; overflow: hidden; }
+  .chart-svg { width: 100%; height: 100%; }
+
+  /* ── TABLES ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11.5px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .6px;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; }
+  thead th:last-child { border-radius: 0 8px 0 0; }
+  tbody tr { border-bottom: 1px solid var(--border-light); transition: background .12s; }
+  tbody tr:hover { background: #fafbfd; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody td { padding: 13px 14px; font-size: 13.5px; color: var(--text-primary); }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge.verified, .badge.active, .badge.available, .badge.completed { background: var(--success-light); color: var(--success); }
+  .badge.pending, .badge.held { background: var(--warning-light); color: var(--warning); }
+  .badge.rejected, .badge.blocked, .badge.failed { background: var(--danger-light); color: var(--danger); }
+  .badge.sold, .badge.deposit { background: var(--primary-light); color: var(--primary); }
+  .badge.withdrawal { background: var(--purple-light); color: var(--purple); }
+  .badge.gray { background: #f1f5f9; color: #64748b; }
+
+  /* ── USER CELL ── */
+  .user-cell { display: flex; align-items: center; gap: 10px; }
+  .user-avatar {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: grid; place-items: center; font-size: 12px;
+    font-weight: 700; flex-shrink: 0;
+  }
+  .ua-blue { background: #dbeafe; color: #1d4ed8; }
+  .ua-purple { background: #ede9fe; color: #6d28d9; }
+  .ua-green { background: #dcfce7; color: #15803d; }
+  .ua-orange { background: #ffedd5; color: #c2410c; }
+  .ua-pink { background: #fce7f3; color: #be185d; }
+  .user-name { font-weight: 600; font-size: 13.5px; }
+  .user-email { font-size: 12px; color: var(--text-muted); }
+
+  /* ── FILTERS BAR ── */
+  .filters-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-search {
+    flex: 1; min-width: 220px; max-width: 320px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 9px; padding: 0 12px; height: 38px;
+  }
+  .filter-search:focus-within { border-color: var(--primary); }
+  .filter-search input { flex: 1; border: none; background: transparent; outline: none; font-family: inherit; font-size: 13px; }
+  .filter-select {
+    height: 38px; padding: 0 12px; border-radius: 9px;
+    border: 1px solid var(--border); background: var(--surface);
+    font-family: inherit; font-size: 13px; color: var(--text-primary);
+    cursor: pointer; outline: none; appearance: none;
+    padding-right: 28px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2394a3b8' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+
+  /* ── ACTIVITY FEED ── */
+  .activity-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-light); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0; }
+  .activity-icon svg { width: 15px; height: 15px; }
+  .activity-text { font-size: 13px; color: var(--text-primary); line-height: 1.5; }
+  .activity-text strong { font-weight: 600; }
+  .activity-time { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── KYC CARDS ── */
+  .kyc-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+  .kyc-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .kyc-card-header { padding: 16px 18px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 10px; }
+  .kyc-card-body { padding: 16px 18px; }
+  .kyc-doc-preview {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 20px; text-align: center; margin-bottom: 14px;
+    background: var(--bg);
+  }
+  .kyc-doc-preview svg { width: 32px; height: 32px; color: var(--text-muted); margin: 0 auto 6px; display: block; }
+  .kyc-doc-label { font-size: 12px; color: var(--text-muted); }
+  .kyc-doc-id { font-size: 12.5px; font-family: 'DM Mono', monospace; color: var(--text-secondary); margin-top: 4px; }
+  .kyc-actions { display: flex; gap: 8px; }
+  .kyc-actions .btn { flex: 1; justify-content: center; }
+
+  /* ── PROJECT CARDS ── */
+  .project-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+  .project-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: all .2s; }
+  .project-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
+  .project-thumb { height: 160px; position: relative; overflow: hidden; }
+  .project-thumb-inner { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .project-status-pill { position: absolute; top: 12px; right: 12px; }
+  .project-card-body { padding: 18px; }
+  .project-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .project-location { font-size: 12.5px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin-bottom: 14px; }
+  .project-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .project-stat { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+  .project-stat-val { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .project-stat-key { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .project-progress { margin-bottom: 8px; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 10px; transition: width .5s; }
+
+  /* ── PLOT STATUS ── */
+  .plot-available { color: var(--success); font-weight: 600; }
+  .plot-held { color: var(--warning); font-weight: 600; }
+  .plot-sold { color: var(--primary); font-weight: 600; }
+
+  /* ── OWNERSHIP ── */
+  .ownership-pct { font-family: 'DM Mono', monospace; font-weight: 600; font-size: 14px; }
+  .ownership-bar { height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; margin-top: 4px; min-width: 80px; }
+  .ownership-fill { height: 100%; background: var(--primary); border-radius: 10px; }
+
+  /* ── SETTINGS ── */
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .settings-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .settings-field { padding: 16px 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+  .settings-field:last-child { border-bottom: none; }
+  .settings-field-info { flex: 1; }
+  .settings-field-label { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+  .settings-field-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .settings-input { height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; font-size: 13.5px; background: var(--bg); width: 160px; color: var(--text-primary); outline: none; }
+  .settings-input:focus { border-color: var(--primary); background: white; }
+  .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 24px; transition: .2s; }
+  .toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .toggle input:checked + .toggle-slider { background: var(--primary); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+  /* ── FORM ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+  .form-input, .form-select, .form-textarea {
+    height: 40px; padding: 0 12px; border-radius: 9px;
+    border: 1px solid var(--border); font-family: inherit;
+    font-size: 13.5px; color: var(--text-primary);
+    background: var(--surface); outline: none; transition: border-color .15s;
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); }
+  .form-textarea { height: 80px; padding: 10px 12px; resize: vertical; }
+  .upload-box {
+    border: 2px dashed var(--border); border-radius: 10px;
+    padding: 24px; text-align: center; cursor: pointer; transition: border-color .15s;
+  }
+  .upload-box:hover { border-color: var(--primary); }
+  .upload-box svg { width: 28px; height: 28px; color: var(--text-muted); margin: 0 auto 6px; display: block; }
+
+  /* ── REPORT CARDS ── */
+  .report-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .report-icon { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; }
+  .report-icon svg { width: 22px; height: 22px; }
+  .report-name { font-size: 15px; font-weight: 700; }
+  .report-desc { font-size: 12.5px; color: var(--text-muted); }
+  .report-actions { display: flex; gap: 8px; margin-top: auto; }
+
+  /* ── REVENUE ── */
+  .revenue-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+  .rev-card { background: var(--bg); border-radius: 10px; padding: 16px 18px; border: 1px solid var(--border); }
+  .rev-val { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .rev-key { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+  /* ── BREADCRUMB ── */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .breadcrumb span { font-size: 12.5px; color: var(--text-muted); }
+  .breadcrumb span.sep { color: var(--border); }
+  .breadcrumb span.current { color: var(--primary); font-weight: 600; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 48px 20px; }
+  .empty-state svg { width: 48px; height: 48px; color: var(--text-muted); margin: 0 auto 12px; display: block; }
+  .empty-state-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .empty-state-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* Mono numbers */
+  .mono { font-family: 'DM Mono', monospace; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1200px) {
+    .stat-grid { grid-template-columns: repeat(2,1fr); }
+    .kyc-grid { grid-template-columns: repeat(2,1fr); }
+    .project-grid { grid-template-columns: repeat(2,1fr); }
+    .grid-65-35 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 900px) {
+    :root { --sidebar-width: 64px; }
+    .sidebar { width: 64px; }
+    .sidebar .nav-label, .sidebar .nav-badge, .sidebar .nav-group-label, .logo-text, .logo-sub { display: none; }
+    .topbar { left: 64px; }
+    .main { margin-left: 64px; }
+    .settings-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .page { padding: 16px; }
+    .stat-grid { grid-template-columns: 1fr; }
+    .grid-2, .grid-3, .form-grid { grid-template-columns: 1fr; }
+    .kyc-grid, .project-grid { grid-template-columns: 1fr; }
+    .revenue-summary { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; }
+    .search-bar { max-width: 200px; }
+    .search-kbd { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10" fill="rgba(255,255,255,.3)"/></svg>
+      </div>
+      <div>
+        <div class="logo-text">PropVault</div>
+        <div class="logo-sub">Admin Console</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group-label">Overview</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-label">Dashboard</span>
+      </div>
+
+      <div class="nav-group-label" style="margin-top:12px">Management</div>
+      <div class="nav-item" onclick="showPage('users',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        <span class="nav-label">Users</span>
+        <span class="nav-badge">12</span>
+      </div>
+      <div class="nav-item" onclick="showPage('kyc',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/></svg>
+        <span class="nav-label">KYC Verification</span>
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item" onclick="showPage('wallet',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        <span class="nav-label">Wallet & Transactions</span>
+      </div>
+
+      <div class="nav-group-label" style="margin-top:12px">Property</div>
+      <div class="nav-item" onclick="showPage('projects',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        <span class="nav-label">Projects</span>
+      </div>
+      <div class="nav-item" onclick="showPage('plots',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke-width="1.5"/></svg>
+        <span class="nav-label">Plot Management</span>
+      </div>
+      <div class="nav-item" onclick="showPage('investments',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        <span class="nav-label">Investments</span>
+      </div>
+      <div class="nav-item" onclick="showPage('ledger',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h5"/></svg>
+        <span class="nav-label">Ownership Ledger</span>
+      </div>
+
+      <div class="nav-group-label" style="margin-top:12px">Finance</div>
+      <div class="nav-item" onclick="showPage('sales',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        <span class="nav-label">Sales & Revenue</span>
+      </div>
+      <div class="nav-item" onclick="showPage('reports',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span class="nav-label">Reports</span>
+      </div>
+
+      <div class="nav-group-label" style="margin-top:12px">System</div>
+      <div class="nav-item" onclick="showPage('settings',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span class="nav-label">Settings</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="nav-item">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" width="18" height="18"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="nav-label">Log Out</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar">
+    <button class="topbar-toggle" onclick="toggleSidebar()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <div class="search-bar">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Search users, plots, projects…">
+      <span class="search-kbd">⌘K</span>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="icon-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="icon-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <div class="admin-chip">
+        <div class="admin-avatar">SA</div>
+        <div class="admin-info">
+          <div class="admin-name">Super Admin</div>
+          <div class="admin-role">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- ══ DASHBOARD PAGE ══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Dashboard</span></div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Welcome back, Admin. Here's what's happening today.</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Last 30 days
+          </button>
+          <button class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-icon" style="background:#eff6ff"><svg fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          </div>
+          <div class="stat-value mono">4,826</div>
+          <div class="stat-change up">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            +12.4% from last month
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-label">Total Property Value</div>
+            <div class="stat-icon" style="background:#f0fdf4"><svg fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+          </div>
+          <div class="stat-value mono">₹24.8Cr</div>
+          <div class="stat-change up">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            +8.2% from last month
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-icon" style="background:#fff7ed"><svg fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          </div>
+          <div class="stat-value mono">₹3.2Cr</div>
+          <div class="stat-change up">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            +22.7% from last month
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-icon" style="background:#f5f3ff"><svg fill="none" stroke="#7c3aed" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          </div>
+          <div class="stat-value mono">14</div>
+          <div class="stat-change up">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+            +2 new this month
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Property Value Growth</div><div class="card-subtitle">Monthly property ownership value</div></div>
+            <select class="filter-select" style="font-size:12px;height:32px;padding:0 28px 0 10px">
+              <option>2024</option><option>2023</option>
+            </select>
+          </div>
+          <div class="card-body">
+            <svg class="chart-svg" style="height:200px" viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2563eb" stop-opacity=".15"/>
+                  <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid -->
+              <line x1="0" y1="40" x2="560" y2="40" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="80" x2="560" y2="80" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="120" x2="560" y2="120" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="160" x2="560" y2="160" stroke="#f1f5f9" stroke-width="1"/>
+              <!-- Area fill -->
+              <path d="M0,160 L46,145 L93,130 L139,118 L186,105 L232,90 L279,80 L325,68 L371,58 L418,48 L464,38 L510,28 L556,20 L560,200 L0,200Z" fill="url(#lineGrad)"/>
+              <!-- Line -->
+              <polyline points="0,160 46,145 93,130 139,118 186,105 232,90 279,80 325,68 371,58 418,48 464,38 510,28 556,20" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+              <!-- Dots -->
+              <circle cx="279" cy="80" r="4" fill="#2563eb" stroke="white" stroke-width="2"/>
+              <circle cx="556" cy="20" r="4" fill="#2563eb" stroke="white" stroke-width="2"/>
+              <!-- Labels -->
+              <text x="0" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">Jan</text>
+              <text x="92" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">Mar</text>
+              <text x="185" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">May</text>
+              <text x="278" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">Jul</text>
+              <text x="370" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">Sep</text>
+              <text x="463" y="195" font-size="10" fill="#94a3b8" font-family="DM Sans">Nov</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Revenue vs Cost</div><div class="card-subtitle">Quarterly comparison</div></div>
+          </div>
+          <div class="card-body">
+            <svg class="chart-svg" style="height:200px" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <!-- Grid -->
+              <line x1="40" y1="10" x2="400" y2="10" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="40" y1="50" x2="400" y2="50" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="40" y1="90" x2="400" y2="90" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="40" y1="130" x2="400" y2="130" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="40" y1="165" x2="400" y2="165" stroke="#e2e8f0" stroke-width="1"/>
+              <!-- Q1 -->
+              <rect x="55" y="90" width="28" height="75" rx="5" fill="#2563eb" opacity=".85"/>
+              <rect x="85" y="110" width="28" height="55" rx="5" fill="#e2e8f0"/>
+              <!-- Q2 -->
+              <rect x="145" y="65" width="28" height="100" rx="5" fill="#2563eb" opacity=".85"/>
+              <rect x="175" y="95" width="28" height="70" rx="5" fill="#e2e8f0"/>
+              <!-- Q3 -->
+              <rect x="235" y="50" width="28" height="115" rx="5" fill="#2563eb" opacity=".85"/>
+              <rect x="265" y="80" width="28" height="85" rx="5" fill="#e2e8f0"/>
+              <!-- Q4 -->
+              <rect x="325" y="30" width="28" height="135" rx="5" fill="#2563eb" opacity=".85"/>
+              <rect x="355" y="60" width="28" height="105" rx="5" fill="#e2e8f0"/>
+              <!-- Labels -->
+              <text x="69" y="185" font-size="11" fill="#94a3b8" font-family="DM Sans" text-anchor="middle">Q1</text>
+              <text x="159" y="185" font-size="11" fill="#94a3b8" font-family="DM Sans" text-anchor="middle">Q2</text>
+              <text x="249" y="185" font-size="11" fill="#94a3b8" font-family="DM Sans" text-anchor="middle">Q3</text>
+              <text x="339" y="185" font-size="11" fill="#94a3b8" font-family="DM Sans" text-anchor="middle">Q4</text>
+              <!-- Legend -->
+              <rect x="120" y="2" width="10" height="10" rx="3" fill="#2563eb" opacity=".85"/>
+              <text x="133" y="11" font-size="10" fill="#64748b" font-family="DM Sans">Revenue</text>
+              <rect x="190" y="2" width="10" height="10" rx="3" fill="#e2e8f0"/>
+              <text x="203" y="11" font-size="10" fill="#64748b" font-family="DM Sans">Cost</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Growth + Activity -->
+      <div class="grid-65-35">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">User Growth</div><div class="card-subtitle">New registrations over time</div></div>
+          </div>
+          <div class="card-body">
+            <svg class="chart-svg" style="height:180px" viewBox="0 0 600 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#7c3aed" stop-opacity=".2"/>
+                  <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="30" x2="600" y2="30" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="70" x2="600" y2="70" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="110" x2="600" y2="110" stroke="#f1f5f9" stroke-width="1"/>
+              <line x1="0" y1="150" x2="600" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+              <path d="M0,140 C30,135 60,120 90,115 C120,110 150,100 180,95 C210,90 240,80 270,72 C300,65 330,55 360,50 C390,45 420,38 450,30 C480,22 510,18 540,14 L600,10 L600,160 L0,160Z" fill="url(#areaGrad)"/>
+              <path d="M0,140 C30,135 60,120 90,115 C120,110 150,100 180,95 C210,90 240,80 270,72 C300,65 330,55 360,50 C390,45 420,38 450,30 C480,22 510,18 540,14 L600,10" fill="none" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round"/>
+              <text x="0" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">Jan</text>
+              <text x="92" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">Mar</text>
+              <text x="185" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">May</text>
+              <text x="278" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">Jul</text>
+              <text x="370" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">Sep</text>
+              <text x="463" y="175" font-size="10" fill="#94a3b8" font-family="DM Sans">Nov</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Activity</div>
+            <button class="btn btn-ghost btn-sm">View all</button>
+          </div>
+          <div class="card-body" style="padding-top:8px">
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#eff6ff"><svg fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24" width="15" height="15"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              <div>
+                <div class="activity-text"><strong>Priya Sharma</strong> completed KYC</div>
+                <div class="activity-time">2 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#f0fdf4"><svg fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+              <div>
+                <div class="activity-text">Plot <strong>#A-204</strong> allocated to Rahul K.</div>
+                <div class="activity-time">18 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#fff7ed"><svg fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24" width="15" height="15"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+              <div>
+                <div class="activity-text">₹2,50,000 deposit by <strong>Anil Verma</strong></div>
+                <div class="activity-time">45 minutes ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#f5f3ff"><svg fill="none" stroke="#7c3aed" stroke-width="1.8" viewBox="0 0 24 24" width="15" height="15"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+              <div>
+                <div class="activity-text">New project <strong>Sunrise Meadows</strong> created</div>
+                <div class="activity-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon" style="background:#fef2f2"><svg fill="none" stroke="#dc2626" stroke-width="1.8" viewBox="0 0 24 24" width="15" height="15"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+              <div>
+                <div class="activity-text">KYC <strong>rejected</strong> for Mohan Das</div>
+                <div class="activity-time">3 hours ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ USERS PAGE ══ -->
+    <div class="page" id="page-users">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Users</span></div>
+          <div class="page-title">User Management</div>
+          <div class="page-subtitle">4,826 registered users · 12 pending approval</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+          <button class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add User
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:10px">
+          <div class="filters-bar" style="margin:0;flex:1">
+            <div class="filter-search">
+              <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search by name, email, mobile…">
+            </div>
+            <select class="filter-select"><option>All KYC Status</option><option>Verified</option><option>Pending</option><option>Rejected</option></select>
+            <select class="filter-select"><option>All Users</option><option>Active</option><option>Blocked</option></select>
+            <select class="filter-select"><option>All Projects</option><option>Sunrise Meadows</option><option>Green Valley</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></th>
+              <th>User</th><th>Mobile</th><th>KYC Status</th><th>Property Value</th><th>Plots Owned</th><th>Status</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></td>
+                <td><div class="user-cell"><div class="user-avatar ua-blue">PS</div><div><div class="user-name">Priya Sharma</div><div class="user-email">priya.sharma@gmail.com</div></div></div></td>
+                <td class="mono">+91 98765 43210</td>
+                <td><span class="badge verified"><span class="badge-dot" style="background:var(--success)"></span>Verified</span></td>
+                <td class="mono">₹12,50,000</td>
+                <td>3 plots</td>
+                <td><span class="badge active">Active</span></td>
+                <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-secondary btn-sm">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></td>
+                <td><div class="user-cell"><div class="user-avatar ua-green">RK</div><div><div class="user-name">Rahul Kumar</div><div class="user-email">rahul.kumar@hotmail.com</div></div></div></td>
+                <td class="mono">+91 87654 32109</td>
+                <td><span class="badge pending"><span class="badge-dot" style="background:var(--warning)"></span>Pending</span></td>
+                <td class="mono">₹5,00,000</td>
+                <td>1 plot</td>
+                <td><span class="badge active">Active</span></td>
+                <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-secondary btn-sm">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></td>
+                <td><div class="user-cell"><div class="user-avatar ua-orange">AV</div><div><div class="user-name">Anil Verma</div><div class="user-email">anil.verma@yahoo.in</div></div></div></td>
+                <td class="mono">+91 76543 21098</td>
+                <td><span class="badge verified"><span class="badge-dot" style="background:var(--success)"></span>Verified</span></td>
+                <td class="mono">₹28,75,000</td>
+                <td>6 plots</td>
+                <td><span class="badge active">Active</span></td>
+                <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-secondary btn-sm">Edit</button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></td>
+                <td><div class="user-cell"><div class="user-avatar ua-purple">MD</div><div><div class="user-name">Mohan Das</div><div class="user-email">mohan.das@rediffmail.com</div></div></div></td>
+                <td class="mono">+91 65432 10987</td>
+                <td><span class="badge rejected"><span class="badge-dot" style="background:var(--danger)"></span>Rejected</span></td>
+                <td class="mono">₹0</td>
+                <td>—</td>
+                <td><span class="badge blocked">Blocked</span></td>
+                <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-secondary btn-sm">Unblock</button></div></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox" style="width:14px;height:14px;accent-color:var(--primary)"></td>
+                <td><div class="user-cell"><div class="user-avatar ua-pink">SR</div><div><div class="user-name">Sunita Rao</div><div class="user-email">sunita.rao@gmail.com</div></div></div></td>
+                <td class="mono">+91 54321 09876</td>
+                <td><span class="badge verified"><span class="badge-dot" style="background:var(--success)"></span>Verified</span></td>
+                <td class="mono">₹8,25,000</td>
+                <td>2 plots</td>
+                <td><span class="badge active">Active</span></td>
+                <td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm">View</button><button class="btn btn-secondary btn-sm">Edit</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-light)">
+          <div style="font-size:12.5px;color:var(--text-muted)">Showing 1–5 of 4,826 users</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-secondary btn-sm">← Prev</button>
+            <button class="btn btn-primary btn-sm">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KYC PAGE ══ -->
+    <div class="page" id="page-kyc">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">KYC Verification</span></div>
+          <div class="page-title">KYC Verification</div>
+          <div class="page-subtitle">5 documents pending review</div>
+        </div>
+        <div class="header-actions">
+          <select class="filter-select">
+            <option>All Status</option><option>Pending</option><option>Approved</option><option>Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="kyc-grid">
+        <!-- Card 1 -->
+        <div class="kyc-card">
+          <div class="kyc-card-header">
+            <div class="user-avatar ua-blue" style="width:38px;height:38px;font-size:13px">PS</div>
+            <div style="flex:1">
+              <div class="user-name">Priya Sharma</div>
+              <div class="user-email">Submitted 2 hours ago</div>
+            </div>
+            <span class="badge pending">Pending</span>
+          </div>
+          <div class="kyc-card-body">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:flex;justify-content:space-between"><span>PAN Card</span><span class="mono" style="font-weight:600;color:var(--text-primary)">ABCPS1234F</span></div>
+            <div class="kyc-doc-preview">
+              <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>
+              <div class="kyc-doc-label">PAN Card · PDF</div>
+              <div class="kyc-doc-id">pan_priya_sharma.pdf · 248 KB</div>
+            </div>
+            <div class="kyc-doc-preview">
+              <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>
+              <div class="kyc-doc-label">Aadhaar Card</div>
+              <div class="kyc-doc-id">xxxx xxxx 8741</div>
+            </div>
+            <div class="kyc-actions">
+              <button class="btn btn-success btn-sm">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                Approve
+              </button>
+              <button class="btn btn-danger btn-sm">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Reject
+              </button>
+              <button class="btn btn-secondary btn-sm">View Docs</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="kyc-card">
+          <div class="kyc-card-header">
+            <div class="user-avatar ua-green" style="width:38px;height:38px;font-size:13px">RK</div>
+            <div style="flex:1">
+              <div class="user-name">Rahul Kumar</div>
+              <div class="user-email">Submitted 5 hours ago</div>
+            </div>
+            <span class="badge pending">Pending</span>
+          </div>
+          <div class="kyc-card-body">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:flex;justify-content:space-between"><span>PAN Card</span><span class="mono" style="font-weight:600;color:var(--text-primary)">DEFKR5678G</span></div>
+            <div class="kyc-doc-preview">
+              <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <div class="kyc-doc-label">Voter ID · Image</div>
+              <div class="kyc-doc-id">voter_rahul_k.jpg · 1.2 MB</div>
+            </div>
+            <div class="kyc-doc-preview">
+              <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h4"/></svg>
+              <div class="kyc-doc-label">Aadhaar Card</div>
+              <div class="kyc-doc-id">xxxx xxxx 2349</div>
+            </div>
+            <div class="kyc-actions">
+              <button class="btn btn-success btn-sm">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>
+                Approve
+              </button>
+              <button class="btn btn-danger btn-sm">
+                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Reject
+              </button>
+              <button class="btn btn-secondary btn-sm">View Docs</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 — Approved example -->
+        <div class="kyc-card" style="opacity:.75">
+          <div class="kyc-card-header">
+            <div class="user-avatar ua-orange" style="width:38px;height:38px;font-size:13px">AV</div>
+            <div style="flex:1">
+              <div class="user-name">Anil Verma</div>
+              <div class="user-email">Verified 2 days ago</div>
+            </div>
+            <span class="badge verified">Verified</span>
+          </div>
+          <div class="kyc-card-body">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:flex;justify-content:space-between"><span>PAN Card</span><span class="mono" style="font-weight:600;color:var(--text-primary)">GHIAV9012H</span></div>
+            <div class="kyc-doc-preview" style="border-color:var(--success);background:var(--success-light)">
+              <svg fill="none" stroke="var(--success)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+              <div class="kyc-doc-label" style="color:var(--success)">All documents verified</div>
+            </div>
+            <div class="kyc-actions">
+              <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">View Documents</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ WALLET PAGE ══ -->
+    <div class="page" id="page-wallet">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Wallet & Transactions</span></div>
+          <div class="page-title">Wallet & Transactions</div>
+          <div class="page-subtitle">All financial movements across the platform</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Total Deposits</div><div class="stat-icon" style="background:#f0fdf4"><svg fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg></div></div><div class="stat-value mono">₹18.4Cr</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Total Withdrawals</div><div class="stat-icon" style="background:#fef2f2"><svg fill="none" stroke="#dc2626" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div></div><div class="stat-value mono">₹2.1Cr</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Pending</div><div class="stat-icon" style="background:#fffbeb"><svg fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div><div class="stat-value mono">₹45.2L</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Transactions</div><div class="stat-icon" style="background:#eff6ff"><svg fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg></div></div><div class="stat-value mono">2,847</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:10px">
+          <div class="card-title">Transaction History</div>
+          <div class="filters-bar" style="margin:0">
+            <input type="date" class="filter-select" style="width:160px">
+            <input type="date" class="filter-select" style="width:160px">
+            <select class="filter-select"><option>All Types</option><option>Deposit</option><option>Withdrawal</option></select>
+            <select class="filter-select"><option>All Status</option><option>Completed</option><option>Pending</option><option>Failed</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Txn ID</th><th>User</th><th>Amount</th><th>Type</th><th>Status</th><th>Date & Time</th><th>Ref No.</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="color:var(--text-secondary)">#TXN-28401</td><td><div class="user-cell"><div class="user-avatar ua-blue" style="width:28px;height:28px;font-size:10px;border-radius:6px">PS</div><span style="font-weight:500">Priya Sharma</span></div></td><td class="mono" style="font-weight:600;color:var(--success)">+₹2,50,000</td><td><span class="badge deposit">Deposit</span></td><td><span class="badge completed">Completed</span></td><td class="mono" style="color:var(--text-secondary)">28 Mar 2024, 14:22</td><td class="mono" style="color:var(--text-muted)">UPI/2024032814220</td></tr>
+              <tr><td class="mono" style="color:var(--text-secondary)">#TXN-28400</td><td><div class="user-cell"><div class="user-avatar ua-orange" style="width:28px;height:28px;font-size:10px;border-radius:6px">AV</div><span style="font-weight:500">Anil Verma</span></div></td><td class="mono" style="font-weight:600;color:var(--danger)">-₹75,000</td><td><span class="badge withdrawal">Withdrawal</span></td><td><span class="badge completed">Completed</span></td><td class="mono" style="color:var(--text-secondary)">28 Mar 2024, 11:05</td><td class="mono" style="color:var(--text-muted)">NEFT/2024032811058</td></tr>
+              <tr><td class="mono" style="color:var(--text-secondary)">#TXN-28399</td><td><div class="user-cell"><div class="user-avatar ua-green" style="width:28px;height:28px;font-size:10px;border-radius:6px">RK</div><span style="font-weight:500">Rahul Kumar</span></div></td><td class="mono" style="font-weight:600;color:var(--success)">+₹5,00,000</td><td><span class="badge deposit">Deposit</span></td><td><span class="badge pending">Pending</span></td><td class="mono" style="color:var(--text-secondary)">27 Mar 2024, 18:44</td><td class="mono" style="color:var(--text-muted)">IMPS/2024032718449</td></tr>
+              <tr><td class="mono" style="color:var(--text-secondary)">#TXN-28398</td><td><div class="user-cell"><div class="user-avatar ua-pink" style="width:28px;height:28px;font-size:10px;border-radius:6px">SR</div><span style="font-weight:500">Sunita Rao</span></div></td><td class="mono" style="font-weight:600;color:var(--success)">+₹1,25,000</td><td><span class="badge deposit">Deposit</span></td><td><span class="badge failed">Failed</span></td><td class="mono" style="color:var(--text-secondary)">27 Mar 2024, 09:12</td><td class="mono" style="color:var(--text-muted)">UPI/2024032709124</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-light)">
+          <div style="font-size:12.5px;color:var(--text-muted)">Showing 1–4 of 2,847 transactions</div>
+          <div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm">← Prev</button><button class="btn btn-primary btn-sm">Next →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PROJECTS PAGE ══ -->
+    <div class="page" id="page-projects">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Projects</span></div>
+          <div class="page-title">Project Management</div>
+          <div class="page-subtitle">14 active projects · 3 upcoming</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            List View
+          </button>
+          <button class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Project
+          </button>
+        </div>
+      </div>
+
+      <div class="project-grid">
+        <!-- Project 1 -->
+        <div class="project-card">
+          <div class="project-thumb">
+            <div class="project-thumb-inner" style="background:linear-gradient(135deg,#dbeafe,#eff6ff)">
+              <svg width="64" height="64" fill="none" stroke="#93c5fd" stroke-width="1.2" viewBox="0 0 64 64"><rect x="8" y="24" width="48" height="32" rx="3"/><path d="M24 56V40h16v16"/><path d="M8 28L32 10l24 18"/><rect x="27" y="32" width="10" height="10" rx="1"/></svg>
+            </div>
+            <div class="project-status-pill"><span class="badge active">Active</span></div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-name">Sunrise Meadows</div>
+            <div class="project-location"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Bhopal, MP</div>
+            <div class="project-stats">
+              <div class="project-stat"><div class="project-stat-val mono">₹48L</div><div class="project-stat-key">Price/Plot</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">124</div><div class="project-stat-key">Total Plots</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">87</div><div class="project-stat-key">Sold</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">37</div><div class="project-stat-key">Available</div></div>
+            </div>
+            <div class="project-progress">
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);margin-bottom:5px"><span>Sold</span><span class="mono" style="font-weight:600;color:var(--text-primary)">70%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">View Plots</button>
+              <button class="btn btn-ghost btn-sm">Edit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+          <div class="project-thumb">
+            <div class="project-thumb-inner" style="background:linear-gradient(135deg,#dcfce7,#f0fdf4)">
+              <svg width="64" height="64" fill="none" stroke="#86efac" stroke-width="1.2" viewBox="0 0 64 64"><rect x="8" y="24" width="48" height="32" rx="3"/><path d="M24 56V40h16v16"/><path d="M8 28L32 10l24 18"/><rect x="27" y="32" width="10" height="10" rx="1"/></svg>
+            </div>
+            <div class="project-status-pill"><span class="badge active">Active</span></div>
+          </div>
+          <div class="project-card-body">
+            <div class="project-name">Green Valley Estate</div>
+            <div class="project-location"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>Indore, MP</div>
+            <div class="project-stats">
+              <div class="project-stat"><div class="project-stat-val mono">₹62L</div><div class="project-stat-key">Price/Plot</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">80</div><div class="project-stat-key">Total Plots</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">42</div><div class="project-stat-key">Sold</div></div>
+              <div class="project-stat"><div class="project-stat-val mono">38</div><div class="project-stat-key">Available</div></div>
+            </div>
+            <div class="project-progress">
+              <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);margin-bottom:5px"><span>Sold</span><span class="mono" style="font-weight:600;color:var(--text-primary)">52%</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:52%"></div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:14px">
+              <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">View Plots</button>
+              <button class="btn btn-ghost btn-sm">Edit</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Project Card -->
+        <div class="project-card" style="border:2px dashed var(--border);box-shadow:none;cursor:pointer;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--primary)'" onmouseleave="this.style.borderColor='var(--border)'">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:320px;gap:12px">
+            <div style="width:52px;height:52px;border-radius:12px;background:var(--primary-light);display:grid;place-items:center">
+              <svg width="24" height="24" fill="none" stroke="#2563eb" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary)">Add New Project</div>
+            <div style="font-size:12.5px;color:var(--text-muted);text-align:center;max-width:180px">Click to create a new property project listing</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ PLOTS PAGE ══ -->
+    <div class="page" id="page-plots">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Plot Management</span></div>
+          <div class="page-title">Plot Management</div>
+          <div class="page-subtitle">Sunrise Meadows · 124 total plots</div>
+        </div>
+        <div class="header-actions">
+          <select class="filter-select"><option>Sunrise Meadows</option><option>Green Valley</option></select>
+          <button class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Plots
+          </button>
+        </div>
+      </div>
+
+      <!-- Plot Legend -->
+      <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12.5px"><div style="width:12px;height:12px;border-radius:3px;background:var(--success)"></div>Available (37)</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12.5px"><div style="width:12px;height:12px;border-radius:3px;background:var(--warning)"></div>Held (12)</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12.5px"><div style="width:12px;height:12px;border-radius:3px;background:var(--primary)"></div>Sold (75)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="filters-bar" style="margin:0;flex:1">
+            <div class="filter-search">
+              <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search plot number…">
+            </div>
+            <select class="filter-select"><option>All Status</option><option>Available</option><option>Held</option><option>Sold</option></select>
+            <select class="filter-select"><option>All Sizes</option><option>200 sqyd</option><option>300 sqyd</option><option>500 sqyd</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Plot No.</th><th>Block</th><th>Size</th><th>Price</th><th>Status</th><th>Owner</th><th>Registration Date</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="font-weight:700">#A-101</td><td>Block A</td><td>200 sqyd</td><td class="mono">₹48,00,000</td><td><span class="badge sold" style="background:#dbeafe;color:#1d4ed8"><span class="badge-dot" style="background:#2563eb"></span>Sold</span></td><td><div class="user-cell"><div class="user-avatar ua-blue" style="width:26px;height:26px;font-size:9px;border-radius:5px">PS</div><span style="font-size:13px">Priya Sharma</span></div></td><td class="mono" style="color:var(--text-secondary)">12 Jan 2024</td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+              <tr><td class="mono" style="font-weight:700">#A-102</td><td>Block A</td><td>300 sqyd</td><td class="mono">₹72,00,000</td><td><span class="badge available"><span class="badge-dot" style="background:var(--success)"></span>Available</span></td><td style="color:var(--text-muted)">—</td><td style="color:var(--text-muted)">—</td><td><button class="btn btn-primary btn-sm">Allocate</button></td></tr>
+              <tr><td class="mono" style="font-weight:700">#A-103</td><td>Block A</td><td>200 sqyd</td><td class="mono">₹48,00,000</td><td><span class="badge held"><span class="badge-dot" style="background:var(--warning)"></span>Held</span></td><td><div class="user-cell"><div class="user-avatar ua-green" style="width:26px;height:26px;font-size:9px;border-radius:5px">RK</div><span style="font-size:13px">Rahul Kumar</span></div></td><td class="mono" style="color:var(--text-secondary)">Hold: 25 Mar</td><td><button class="btn btn-ghost btn-sm">Release</button></td></tr>
+              <tr><td class="mono" style="font-weight:700">#B-201</td><td>Block B</td><td>500 sqyd</td><td class="mono">₹1,20,00,000</td><td><span class="badge sold" style="background:#dbeafe;color:#1d4ed8"><span class="badge-dot" style="background:#2563eb"></span>Sold</span></td><td><div class="user-cell"><div class="user-avatar ua-orange" style="width:26px;height:26px;font-size:9px;border-radius:5px">AV</div><span style="font-size:13px">Anil Verma</span></div></td><td class="mono" style="color:var(--text-secondary)">08 Feb 2024</td><td><button class="btn btn-ghost btn-sm">View</button></td></tr>
+              <tr><td class="mono" style="font-weight:700">#B-202</td><td>Block B</td><td>300 sqyd</td><td class="mono">₹72,00,000</td><td><span class="badge available"><span class="badge-dot" style="background:var(--success)"></span>Available</span></td><td style="color:var(--text-muted)">—</td><td style="color:var(--text-muted)">—</td><td><button class="btn btn-primary btn-sm">Allocate</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INVESTMENTS PAGE ══ -->
+    <div class="page" id="page-investments">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Investments</span></div>
+          <div class="page-title">Investments</div>
+          <div class="page-subtitle">All property purchase records</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="filters-bar" style="margin:0">
+            <div class="filter-search"><svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Search user or project…"></div>
+            <select class="filter-select"><option>All Projects</option><option>Sunrise Meadows</option><option>Green Valley</option></select>
+            <input type="date" class="filter-select">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>User</th><th>Project</th><th>Plot</th><th>Amount Paid</th><th>Payment Mode</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="mono" style="color:var(--text-muted)">#INV-1001</td><td><div class="user-cell"><div class="user-avatar ua-blue" style="width:28px;height:28px;font-size:10px;border-radius:6px">PS</div><span>Priya Sharma</span></div></td><td>Sunrise Meadows</td><td class="mono">#A-101</td><td class="mono" style="font-weight:700">₹48,00,000</td><td>NEFT</td><td class="mono" style="color:var(--text-secondary)">12 Jan 2024</td><td><span class="badge completed">Completed</span></td></tr>
+              <tr><td class="mono" style="color:var(--text-muted)">#INV-1002</td><td><div class="user-cell"><div class="user-avatar ua-orange" style="width:28px;height:28px;font-size:10px;border-radius:6px">AV</div><span>Anil Verma</span></div></td><td>Green Valley</td><td class="mono">#B-201</td><td class="mono" style="font-weight:700">₹1,20,00,000</td><td>RTGS</td><td class="mono" style="color:var(--text-secondary)">08 Feb 2024</td><td><span class="badge completed">Completed</span></td></tr>
+              <tr><td class="mono" style="color:var(--text-muted)">#INV-1003</td><td><div class="user-cell"><div class="user-avatar ua-green" style="width:28px;height:28px;font-size:10px;border-radius:6px">RK</div><span>Rahul Kumar</span></div></td><td>Sunrise Meadows</td><td class="mono">#A-103</td><td class="mono" style="font-weight:700">₹48,00,000</td><td>UPI</td><td class="mono" style="color:var(--text-secondary)">22 Mar 2024</td><td><span class="badge pending">Pending</span></td></tr>
+              <tr><td class="mono" style="color:var(--text-muted)">#INV-1004</td><td><div class="user-cell"><div class="user-avatar ua-pink" style="width:28px;height:28px;font-size:10px;border-radius:6px">SR</div><span>Sunita Rao</span></div></td><td>Sunrise Meadows</td><td class="mono">#C-302</td><td class="mono" style="font-weight:700">₹72,00,000</td><td>Cheque</td><td class="mono" style="color:var(--text-secondary)">15 Mar 2024</td><td><span class="badge completed">Completed</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ OWNERSHIP LEDGER PAGE ══ -->
+    <div class="page" id="page-ledger">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Ownership Ledger</span></div>
+          <div class="page-title">Ownership Ledger</div>
+          <div class="page-subtitle">Comprehensive record of all property ownership across projects</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Ledger
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Cards -->
+      <div class="stat-grid" style="margin-bottom:20px">
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Total Owners</div><div class="stat-icon" style="background:#eff6ff"><svg fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div><div class="stat-value mono">1,284</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Total Plots Owned</div><div class="stat-icon" style="background:#f0fdf4"><svg fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div></div><div class="stat-value mono">2,018</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Total Registered Value</div><div class="stat-icon" style="background:#fff7ed"><svg fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div></div><div class="stat-value mono">₹24.8Cr</div></div>
+        <div class="stat-card"><div class="stat-header"><div class="stat-label">Avg. Ownership</div><div class="stat-icon" style="background:#f5f3ff"><svg fill="none" stroke="#7c3aed" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div></div><div class="stat-value mono">1.57</div><div style="font-size:12px;color:var(--text-muted)">plots per owner</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Ownership Registry</div><div class="card-subtitle">Legal ownership records per user per project</div></div>
+          <div class="filters-bar" style="margin:0">
+            <div class="filter-search"><svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><input type="text" placeholder="Search owner…"></div>
+            <select class="filter-select"><option>All Projects</option><option>Sunrise Meadows</option><option>Green Valley</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Owner</th><th>Project</th><th>Plot(s)</th><th>Total Sq. Yd</th><th>Purchase Value</th><th>Ownership %</th><th>Reg. Certificate</th><th>Date</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><div class="user-cell"><div class="user-avatar ua-blue">PS</div><div><div class="user-name">Priya Sharma</div><div class="user-email">ABCPS1234F</div></div></div></td>
+                <td>Sunrise Meadows</td>
+                <td class="mono">#A-101, #A-102, #C-101</td>
+                <td class="mono">700 sqyd</td>
+                <td class="mono" style="font-weight:700">₹1,44,00,000</td>
+                <td>
+                  <div class="ownership-pct" style="color:var(--primary)">3.24%</div>
+                  <div class="ownership-bar"><div class="ownership-fill" style="width:32%"></div></div>
+                </td>
+                <td><button class="btn btn-secondary btn-sm">View Cert.</button></td>
+                <td class="mono" style="color:var(--text-secondary)">12 Jan 2024</td>
+              </tr>
+              <tr>
+                <td><div class="user-cell"><div class="user-avatar ua-orange">AV</div><div><div class="user-name">Anil Verma</div><div class="user-email">GHIAV9012H</div></div></div></td>
+                <td>Green Valley</td>
+                <td class="mono">#B-201 – #B-206</td>
+                <td class="mono">1,800 sqyd</td>
+                <td class="mono" style="font-weight:700">₹3,72,00,000</td>
+                <td>
+                  <div class="ownership-pct" style="color:var(--success)">7.50%</div>
+                  <div class="ownership-bar"><div class="ownership-fill" style="width:75%;background:var(--success)"></div></div>
+                </td>
+                <td><button class="btn btn-secondary btn-sm">View Cert.</button></td>
+                <td class="mono" style="color:var(--text-secondary)">08 Feb 2024</td>
+              </tr>
+              <tr>
+                <td><div class="user-cell"><div class="user-avatar ua-pink">SR</div><div><div class="user-name">Sunita Rao</div><div class="user-email">JKLSR3456I</div></div></div></td>
+                <td>Sunrise Meadows</td>
+                <td class="mono">#C-302, #C-303</td>
+                <td class="mono">600 sqyd</td>
+                <td class="mono" style="font-weight:700">₹1,44,00,000</td>
+                <td>
+                  <div class="ownership-pct" style="color:var(--warning)">1.85%</div>
+                  <div class="ownership-bar"><div class="ownership-fill" style="width:19%;background:var(--warning)"></div></div>
+                </td>
+                <td><button class="btn btn-secondary btn-sm">View Cert.</button></td>
+                <td class="mono" style="color:var(--text-secondary)">15 Mar 2024</td>
+              </tr>
+              <tr>
+                <td><div class="user-cell"><div class="user-avatar ua-green">RK</div><div><div class="user-name">Rahul Kumar</div><div class="user-email">DEFKR5678G</div></div></div></td>
+                <td>Sunrise Meadows</td>
+                <td class="mono">#A-103</td>
+                <td class="mono">200 sqyd</td>
+                <td class="mono" style="font-weight:700">₹48,00,000</td>
+                <td>
+                  <div class="ownership-pct" style="color:var(--text-secondary)">0.60%</div>
+                  <div class="ownership-bar"><div class="ownership-fill" style="width:6%;background:#64748b"></div></div>
+                </td>
+                <td><button class="btn btn-secondary btn-sm" style="opacity:.5;cursor:not-allowed">Pending</button></td>
+                <td class="mono" style="color:var(--text-secondary)">22 Mar 2024</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border-light)">
+          <div style="font-size:12.5px;color:var(--text-muted)">Showing 1–4 of 1,284 ownership records</div>
+          <div style="display:flex;gap:6px"><button class="btn btn-secondary btn-sm">← Prev</button><button class="btn btn-primary btn-sm">Next →</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SALES PAGE ══ -->
+    <div class="page" id="page-sales">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Sales & Revenue</span></div>
+          <div class="page-title">Sales & Revenue</div>
+          <div class="page-subtitle">Plot sales and revenue tracking</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Record Sale
+          </button>
+        </div>
+      </div>
+
+      <div class="revenue-summary">
+        <div class="rev-card"><div class="rev-val mono" style="color:var(--success)">₹18.4Cr</div><div class="rev-key">Total Revenue Collected</div></div>
+        <div class="rev-card"><div class="rev-val mono" style="color:var(--primary)">162</div><div class="rev-key">Total Plots Sold</div></div>
+        <div class="rev-card"><div class="rev-val mono" style="color:var(--warning)">₹1.13Cr</div><div class="rev-key">Avg. Sale Value</div></div>
+      </div>
+
+      <!-- Sale Form + Table -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Record New Sale</div></div>
+          <div class="card-body">
+            <div class="form-grid" style="gap:12px">
+              <div class="form-group" style="grid-column:span 2">
+                <label class="form-label">Select Project</label>
+                <select class="form-select"><option>Sunrise Meadows</option><option>Green Valley Estate</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Plot Number</label>
+                <select class="form-select"><option>#A-102 (Available)</option><option>#B-202 (Available)</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sale Price (₹)</label>
+                <input class="form-input" type="text" value="48,00,000">
+              </div>
+              <div class="form-group" style="grid-column:span 2">
+                <label class="form-label">Buyer</label>
+                <select class="form-select"><option>Select registered user…</option><option>Priya Sharma</option><option>Rahul Kumar</option><option>Anil Verma</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payment Mode</label>
+                <select class="form-select"><option>NEFT</option><option>RTGS</option><option>Cheque</option><option>UPI</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payment Status</label>
+                <select class="form-select"><option>Completed</option><option>Partial</option><option>Pending</option></select>
+              </div>
+              <div class="form-group" style="grid-column:span 2">
+                <label class="form-label">Notes (optional)</label>
+                <textarea class="form-textarea" placeholder="Any additional notes about this sale…"></textarea>
+              </div>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:8px">
+              <button class="btn btn-primary">Confirm Sale</button>
+              <button class="btn btn-secondary">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Sales</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Plot</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td class="mono" style="font-weight:600">#A-101</td><td style="font-size:12.5px">Priya Sharma</td><td class="mono" style="font-weight:600">₹48L</td><td><span class="badge completed">Paid</span></td></tr>
+                <tr><td class="mono" style="font-weight:600">#B-201</td><td style="font-size:12.5px">Anil Verma</td><td class="mono" style="font-weight:600">₹1.2Cr</td><td><span class="badge completed">Paid</span></td></tr>
+                <tr><td class="mono" style="font-weight:600">#C-302</td><td style="font-size:12.5px">Sunita Rao</td><td class="mono" style="font-weight:600">₹72L</td><td><span class="badge completed">Paid</span></td></tr>
+                <tr><td class="mono" style="font-weight:600">#A-103</td><td style="font-size:12.5px">Rahul Kumar</td><td class="mono" style="font-weight:600">₹48L</td><td><span class="badge pending">Pending</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REPORTS PAGE ══ -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Reports</span></div>
+          <div class="page-title">Reports & Analytics</div>
+          <div class="page-subtitle">Generate and download platform reports</div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="font-size:13px;font-weight:600;color:var(--text-secondary);white-space:nowrap">Filter By:</div>
+            <input type="date" class="filter-select" style="width:160px">
+            <span style="color:var(--text-muted);font-size:12px">to</span>
+            <input type="date" class="filter-select" style="width:160px">
+            <select class="filter-select"><option>All Projects</option><option>Sunrise Meadows</option><option>Green Valley</option></select>
+            <select class="filter-select"><option>All Users</option><option>Priya Sharma</option><option>Anil Verma</option></select>
+            <button class="btn btn-primary btn-sm">Apply Filters</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="report-card">
+          <div class="report-icon" style="background:#eff6ff"><svg fill="none" stroke="#2563eb" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+          <div class="report-name">User Report</div>
+          <div class="report-desc">All registered users, KYC status, ownership summary</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF
+            </button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-icon" style="background:#f0fdf4"><svg fill="none" stroke="#16a34a" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div class="report-name">Transaction Report</div>
+          <div class="report-desc">All deposits, withdrawals, and payment records</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">PDF</button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">Excel</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-icon" style="background:#f5f3ff"><svg fill="none" stroke="#7c3aed" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></div>
+          <div class="report-name">Ownership Ledger</div>
+          <div class="report-desc">Complete ownership registry and certificates</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">PDF</button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">Excel</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-icon" style="background:#fff7ed"><svg fill="none" stroke="#d97706" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+          <div class="report-name">Plot Status Report</div>
+          <div class="report-desc">Available, held, and sold plots per project</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">PDF</button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">Excel</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-icon" style="background:#fef2f2"><svg fill="none" stroke="#dc2626" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+          <div class="report-name">Sales & Revenue</div>
+          <div class="report-desc">Revenue collected, pending, and project-wise breakdown</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">PDF</button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">Excel</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-icon" style="background:#ecfdf5"><svg fill="none" stroke="#059669" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="report-name">KYC Report</div>
+          <div class="report-desc">Verification status and document compliance overview</div>
+          <div class="report-actions">
+            <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center">PDF</button>
+            <button class="btn btn-success btn-sm" style="flex:1;justify-content:center">Excel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS PAGE ══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div>
+          <div class="breadcrumb"><span>Home</span><span class="sep">/</span><span class="current">Settings</span></div>
+          <div class="page-title">Settings</div>
+          <div class="page-subtitle">Platform configuration and preferences</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Investment Rules -->
+        <div class="settings-section">
+          <div class="card-header"><div class="card-title">Property Purchase Rules</div></div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Minimum Purchase Amount</div>
+              <div class="settings-field-desc">Minimum amount required to purchase a plot</div>
+            </div>
+            <input class="settings-input" value="₹ 5,00,000">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">KYC Eligibility Threshold</div>
+              <div class="settings-field-desc">Minimum wallet balance to unlock KYC</div>
+            </div>
+            <input class="settings-input" value="₹ 50,000">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Max Plots Per User</div>
+              <div class="settings-field-desc">Maximum plots one user can own per project</div>
+            </div>
+            <input class="settings-input" type="number" value="10">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Hold Duration (days)</div>
+              <div class="settings-field-desc">How long a plot can be held before release</div>
+            </div>
+            <input class="settings-input" type="number" value="7">
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-section">
+          <div class="card-header"><div class="card-title">Notification Settings</div></div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">New User Registration</div>
+              <div class="settings-field-desc">Alert when a new user registers</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">KYC Submission</div>
+              <div class="settings-field-desc">Notify when KYC is submitted for review</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Transaction Alerts</div>
+              <div class="settings-field-desc">Alert on deposits and withdrawals</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Plot Sale Notification</div>
+              <div class="settings-field-desc">Notify when a plot sale is completed</div>
+            </div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <!-- Payment -->
+        <div class="settings-section">
+          <div class="card-header"><div class="card-title">Payment Gateway</div></div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Gateway Provider</div>
+              <div class="settings-field-desc">Active payment processing provider</div>
+            </div>
+            <select class="settings-input" style="width:160px;padding:0 10px">
+              <option>Razorpay</option><option>PayU</option><option>Cashfree</option>
+            </select>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">API Key (live)</div>
+              <div class="settings-field-desc">Production API key for payment gateway</div>
+            </div>
+            <input class="settings-input" type="password" value="rzp_live_xxxxx">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Enable UPI Payments</div>
+              <div class="settings-field-desc">Allow users to pay via UPI</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Enable NEFT/RTGS</div>
+              <div class="settings-field-desc">Allow bank transfer payments</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+
+        <!-- Platform -->
+        <div class="settings-section">
+          <div class="card-header"><div class="card-title">Platform Settings</div></div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Platform Name</div>
+              <div class="settings-field-desc">Displayed in emails and user portal</div>
+            </div>
+            <input class="settings-input" value="PropVault">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Support Email</div>
+              <div class="settings-field-desc">Shown to users for support queries</div>
+            </div>
+            <input class="settings-input" value="support@propvault.in" style="width:220px">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Maintenance Mode</div>
+              <div class="settings-field-desc">Disables user access during maintenance</div>
+            </div>
+            <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-info">
+              <div class="settings-field-label">Two-Factor Auth (Admin)</div>
+              <div class="settings-field-desc">Require 2FA for admin login</div>
+            </div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let sidebarCollapsed = false;
+
+  function toggleSidebar() {
+    sidebarCollapsed = !sidebarCollapsed;
+    const s = document.getElementById('sidebar');
+    const t = document.getElementById('topbar');
+    const m = document.getElementById('main');
+    s.classList.toggle('collapsed', sidebarCollapsed);
+    t.classList.toggle('sidebar-collapsed', sidebarCollapsed);
+    m.classList.toggle('sidebar-collapsed', sidebarCollapsed);
+  }
+
+  function showPage(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    el.classList.add('active');
+  }
+
+  // Responsive: auto-collapse on small screens
+  if (window.innerWidth <= 900) {
+    sidebarCollapsed = true;
+    document.getElementById('sidebar').classList.add('collapsed');
+  }
+</script>
+</body>
+</html>

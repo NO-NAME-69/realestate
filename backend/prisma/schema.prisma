@@ -1,0 +1,447 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ━━━━━━━━━━━━━━━━ ENUMS ━━━━━━━━━━━━━━━━
+
+enum UserStatus {
+  INACTIVE
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+}
+
+enum UserRole {
+  INVESTOR
+  TEAM_LEADER
+  FINANCE_MANAGER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TransactionType {
+  REGISTRATION_FEE
+  WALLET_TOPUP
+  INVESTMENT_DEBIT
+  PROFIT_CREDIT
+  WITHDRAWAL
+  REFUND
+  ADMIN_CREDIT
+  ADMIN_DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVERSED
+}
+
+enum ProjectStatus {
+  PLANNED
+  LAND_ACQUIRED
+  LEGAL_IN_PROGRESS
+  APPROVED
+  UNDER_DEVELOPMENT
+  READY_FOR_SALE
+  COMPLETED
+  CLOSED
+}
+
+enum PlotStatus {
+  AVAILABLE
+  HELD
+  RESERVED
+  SOLD
+}
+
+enum PlotType {
+  CORNER
+  MIDDLE
+  DOUBLE_ROAD
+}
+
+enum SalePaymentStatus {
+  PENDING
+  PARTIAL
+  COMPLETED
+}
+
+enum HoldStatus {
+  ACTIVE
+  RELEASED_MANUAL
+  RELEASED_EXPIRED
+  RELEASED_ADMIN
+  CONVERTED_TO_SALE
+}
+
+enum DistributionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  ROLLED_BACK
+}
+
+// ━━━━━━━━━━━━━━━━ MODELS ━━━━━━━━━━━━━━━━
+
+model User {
+  id                  String     @id @default(uuid()) @db.Uuid
+  email               String     @unique @db.VarChar(255)
+  mobile              String     @unique @db.VarChar(15)
+  passwordHash        String     @map("password_hash") @db.VarChar(255)
+  fullName            String     @map("full_name") @db.VarChar(200)
+  address             String?    @db.VarChar(500)
+  dateOfBirth         DateTime?  @map("date_of_birth") @db.Date
+  occupation          String?    @db.VarChar(100)
+  profilePhotoUrl     String?    @map("profile_photo_url") @db.VarChar(500)
+
+  // PII — encrypted at rest via Prisma middleware
+  panNumber           String?    @map("pan_number") @db.VarChar(500)
+  aadhaarNumber       String?    @map("aadhaar_number") @db.VarChar(500)
+  bankAccountNumber   String?    @map("bank_account_number") @db.VarChar(500)
+  bankIfsc            String?    @map("bank_ifsc") @db.VarChar(500)
+  upiId               String?    @map("upi_id") @db.VarChar(500)
+
+  status              UserStatus @default(INACTIVE)
+  role                UserRole   @default(INVESTOR)
+  isMobileVerified    Boolean    @default(false) @map("is_mobile_verified")
+  isEmailVerified     Boolean    @default(false) @map("is_email_verified")
+  activationReason    String?    @map("activation_reason") @db.VarChar(50)
+  totalInvestment     Int        @default(0) @map("total_investment")
+
+  passwordHistory     String[]   @default([]) @map("password_history")
+
+  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt           DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt           DateTime?  @map("deleted_at") @db.Timestamptz()
+
+  wallet              Wallet?
+  sessions            UserSession[]
+  ledTeam             Team?        @relation("TeamLeader")
+  teamMemberships     TeamMember[]
+  investments         Investment[]
+  plotHolds           PlotHold[]
+  referralsMade       Referral[]   @relation("Referrer")
+  referralsReceived   Referral[]   @relation("Referee")
+  profitDistributions ProfitDistribution[]
+
+  @@index([email])
+  @@index([mobile])
+  @@index([status])
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserSession {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  tokenFamily   String   @map("token_family") @db.Uuid
+  tokenHash     String   @map("token_hash") @db.VarChar(255)
+  ipAddress     String   @map("ip_address") @db.VarChar(45)
+  userAgentHash String   @map("user_agent_hash") @db.VarChar(64)
+  isRevoked     Boolean  @default(false) @map("is_revoked")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  expiresAt     DateTime @map("expires_at") @db.Timestamptz()
+  lastUsedAt    DateTime @default(now()) @map("last_used_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRevoked])
+  @@index([tokenFamily])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+model Team {
+  id           String       @id @default(uuid()) @db.Uuid
+  leaderId     String       @unique @map("leader_id") @db.Uuid
+  name         String?      @db.VarChar(200)
+  referralCode String       @unique @map("referral_code") @db.VarChar(20)
+  memberCount  Int          @default(0) @map("member_count")
+  teamValue    Int          @default(0) @map("team_value")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  leader  User         @relation("TeamLeader", fields: [leaderId], references: [id])
+  members TeamMember[]
+
+  @@index([referralCode])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  teamId   String   @map("team_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz()
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+model Wallet {
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @unique @map("user_id") @db.Uuid
+  balance      Int           @default(0)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@index([userId])
+  @@map("wallets")
+}
+
+model Transaction {
+  id              String            @id @default(uuid()) @db.Uuid
+  walletId        String            @map("wallet_id") @db.Uuid
+  type            TransactionType
+  amount          Int
+  balanceBefore   Int               @map("balance_before")
+  balanceAfter    Int               @map("balance_after")
+  status          TransactionStatus @default(PENDING)
+  description     String?           @db.VarChar(500)
+  referenceId     String?           @map("reference_id") @db.VarChar(100)
+  idempotencyKey  String?           @map("idempotency_key") @db.VarChar(100)
+  metadata        Json?             @db.JsonB
+
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt       DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@unique([walletId, idempotencyKey])
+  @@index([walletId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Project {
+  id              String        @id @default(uuid()) @db.Uuid
+  name            String        @db.VarChar(300)
+  type            String        @db.VarChar(50)
+  location        String        @db.VarChar(500)
+  description     String?       @db.Text
+  totalAreaSqft   Int           @map("total_area_sqft")
+  totalCost       Int           @map("total_cost")
+  estimatedValue  Int           @map("estimated_value")
+  status          ProjectStatus @default(PLANNED)
+  completionDate  DateTime?     @map("completion_date") @db.Date
+  galleryUrls     String[]      @default([]) @map("gallery_urls")
+  documentUrls    String[]      @default([]) @map("document_urls")
+
+  tspStatus       String?       @map("tsp_status") @db.VarChar(50)
+  reraNumber      String?       @map("rera_number") @db.VarChar(100)
+
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt       DateTime?     @map("deleted_at") @db.Timestamptz()
+
+  plots       Plot[]
+  investments Investment[]
+  sales       Sale[]
+
+  @@index([status])
+  @@map("projects")
+}
+
+model Plot {
+  id            String     @id @default(uuid()) @db.Uuid
+  projectId     String     @map("project_id") @db.Uuid
+  plotNumber    String     @map("plot_number") @db.VarChar(50)
+  sizeSqft      Int        @map("size_sqft")
+  type          PlotType
+  facing        String?    @db.VarChar(50)
+  roadWidthFt   Int?       @map("road_width_ft")
+  price         Int
+  status        PlotStatus @default(AVAILABLE)
+  features      Json?      @db.JsonB
+
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt     DateTime?  @map("deleted_at") @db.Timestamptz()
+
+  project     Project      @relation(fields: [projectId], references: [id])
+  investments Investment[]
+  holds       PlotHold[]
+  sale        Sale?
+
+  @@unique([projectId, plotNumber])
+  @@index([projectId])
+  @@index([status])
+  @@map("plots")
+}
+
+model Investment {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  projectId       String   @map("project_id") @db.Uuid
+  plotId          String?  @map("plot_id") @db.Uuid
+  amount          Int
+  isReinvestment  Boolean  @default(false) @map("is_reinvestment")
+  sourceProfitId  String?  @map("source_profit_id") @db.Uuid
+
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz()
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+  plot    Plot?   @relation(fields: [plotId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([plotId])
+  @@map("investments")
+}
+
+model PlotHold {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String     @map("user_id") @db.Uuid
+  plotId     String     @map("plot_id") @db.Uuid
+  status     HoldStatus @default(ACTIVE)
+  heldAt     DateTime   @default(now()) @map("held_at") @db.Timestamptz()
+  expiresAt  DateTime   @map("expires_at") @db.Timestamptz()
+  releasedAt DateTime?  @map("released_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id])
+  plot Plot @relation(fields: [plotId], references: [id])
+
+  @@index([userId])
+  @@index([plotId])
+  @@index([status, expiresAt])
+  @@map("plot_holds")
+}
+
+model Sale {
+  id               String            @id @default(uuid()) @db.Uuid
+  plotId           String            @unique @map("plot_id") @db.Uuid
+  projectId        String            @map("project_id") @db.Uuid
+  buyerName        String            @map("buyer_name") @db.VarChar(200)
+  buyerEmail       String?           @map("buyer_email") @db.VarChar(255)
+  buyerMobile      String            @map("buyer_mobile") @db.VarChar(15)
+  buyerPan         String?           @map("buyer_pan") @db.VarChar(500)
+  buyerAadhaar     String?           @map("buyer_aadhaar") @db.VarChar(500)
+  basePrice        Int               @map("base_price")
+  negotiatedPrice  Int               @map("negotiated_price")
+  finalPrice       Int               @map("final_price")
+  paymentStatus    SalePaymentStatus @default(PENDING) @map("payment_status")
+  isDistributed    Boolean           @default(false) @map("is_distributed")
+  invoiceUrl       String?           @map("invoice_url") @db.VarChar(500)
+  initiatedBy      String            @map("initiated_by") @db.Uuid
+
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt        DateTime?         @map("deleted_at") @db.Timestamptz()
+
+  plot         Plot                 @relation(fields: [plotId], references: [id])
+  project      Project              @relation(fields: [projectId], references: [id])
+  distributions ProfitDistribution[]
+
+  @@index([projectId])
+  @@index([paymentStatus])
+  @@map("sales")
+}
+
+model ProfitDistribution {
+  id               String             @id @default(uuid()) @db.Uuid
+  saleId           String             @map("sale_id") @db.Uuid
+  userId           String             @map("user_id") @db.Uuid
+  investmentAmount Int                @map("investment_amount")
+  totalInvested    Int                @map("total_invested")
+  grossProfit      Int                @map("gross_profit")
+  companyShare     Int                @map("company_share")
+  investorPool     Int                @map("investor_pool")
+  userProfit       Int                @map("user_profit")
+  status           DistributionStatus @default(PENDING)
+
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+
+  sale Sale @relation(fields: [saleId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([saleId, userId])
+  @@index([saleId])
+  @@index([userId])
+  @@map("profit_distributions")
+}
+
+model Referral {
+  id         String   @id @default(uuid()) @db.Uuid
+  referrerId String   @map("referrer_id") @db.Uuid
+  refereeId  String   @map("referee_id") @db.Uuid
+  bonusPaise Int      @default(0) @map("bonus_paise")
+  isPaid     Boolean  @default(false) @map("is_paid")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id])
+  referee  User @relation("Referee", fields: [refereeId], references: [id])
+
+  @@unique([referrerId, refereeId])
+  @@index([referrerId])
+  @@map("referrals")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  eventType     String   @map("event_type") @db.VarChar(100)
+  actorId       String?  @map("actor_id") @db.Uuid
+  actorRole     String?  @map("actor_role") @db.VarChar(50)
+  targetType    String?  @map("target_type") @db.VarChar(50)
+  targetId      String?  @map("target_id") @db.Uuid
+  ipAddress     String?  @map("ip_address") @db.VarChar(45)
+  userAgentHash String?  @map("user_agent_hash") @db.VarChar(64)
+  payload       Json?    @db.JsonB
+  result        String   @db.VarChar(20)
+  failureReason String?  @map("failure_reason") @db.VarChar(500)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@index([eventType])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model IdempotencyKey {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  key         String   @db.VarChar(100)
+  payloadHash String   @map("payload_hash") @db.VarChar(64)
+  response    Json     @db.JsonB
+  statusCode  Int      @map("status_code")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  expiresAt   DateTime @map("expires_at") @db.Timestamptz()
+
+  @@unique([userId, key])
+  @@index([expiresAt])
+  @@map("idempotency_keys")
+}
+
+model SystemConfig {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique @db.VarChar(100)
+  value       String   @db.Text
+  description String?  @db.VarChar(500)
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@index([key])
+  @@map("system_configs")
+}
