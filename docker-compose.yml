@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════
+# RP Investments — Full Production Stack (Docker)
+# ─────────────────────────────────────────────────────────
+# Start:   docker compose up -d --build
+# Stop:    docker compose down
+# Logs:    docker compose logs -f
+# Rebuild: docker compose up -d --build --force-recreate
+# ═══════════════════════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL 16 Database ──────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: rp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-rp_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-rp_secure_password_2026}
+      POSTGRES_DB: ${DB_NAME:-rp_module}
+    volumes:
+      - rp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rp_user -d rp_module"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis 7 Cache ───────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rp-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Fastify Backend API ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rp-backend
+    restart: unless-stopped
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${DB_USER:-rp_user}:${DB_PASSWORD:-rp_secure_password_2026}@postgres:5432/${DB_NAME:-rp_module}
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── React Frontend (internal Nginx) ────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rp-frontend
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - backend
+
+  # ── Nginx Reverse Proxy (public entry point) ───────────
+  nginx:
+    image: nginx:alpine
+    container_name: rp-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  rp_pgdata:
