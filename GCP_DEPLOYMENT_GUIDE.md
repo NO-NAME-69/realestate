@@ -62,30 +62,14 @@ newgrp docker # Apply permissions immediately
 
 ---
 
-## 5. Generate an SSH Key & Clone Your GitHub Repository
-Instead of using passwords, we use deployment keys to securely connect your server to GitHub.
+## 5. Clone Your GitHub Repository
+Since the repository is public, you can directly clone it via HTTPS — no SSH keys needed.
 
-1. On your VM, generate an SSH key:
-   ```bash
-   ssh-keygen -t ed25519 -C "your_email@example.com"
-   ```
-   *(Press 'Enter' to accept default path and skip the passphrase)*
-
-2. View and copy the generated public SSH key:
-   ```bash
-   cat ~/.ssh/id_ed25519.pub
-   ```
-
-3. Go to your project repository on **GitHub** → **Settings** → **Deploy Keys** (on the left sidebar) → **Add deploy key**.
-   - Paste the key, give it a title like "GCP Production Server", and save.
-
-4. Clone the repository onto the VM:
-   ```bash
-   cd ~
-   # Replace with your actual GitHub SSH clone URL
-   git clone git@github.com:yourusername/realestate-website.git 
-   cd realestate-website
-   ```
+```bash
+cd ~
+git clone https://github.com/NO-NAME-69/realestate.git
+cd realestate
+```
 
 ---
 
@@ -128,7 +112,7 @@ Since you use Docker Compose for stateful services:
 ## 7. Configure and Start the Fastify Backend
 1. Navigate to the backend directory:
    ```bash
-   cd ~/realestate-website/backend
+   cd ~/realestate/backend
    ```
 2. Set up the production environment variables:
    ```bash
@@ -162,7 +146,7 @@ Since you use Docker Compose for stateful services:
 ## 8. Build the Vite React Frontend
 1. Navigate to the frontend directory:
    ```bash
-   cd ~/realestate-website/frontend
+   cd ~/realestate/frontend
    ```
 2. Set up frontend production variables (if any API URLs need to be mapped):
    ```bash
@@ -196,7 +180,7 @@ Nginx will serve your frontend static files directly and automatically proxy API
        # 1. Serve the compiled Frontend locally
        location / {
            # Ensure this path perfectly matches your Ubuntu home user folder path
-           root /home/YOUR_UBUNTU_USERNAME/realestate-website/frontend/dist;
+           root /home/YOUR_UBUNTU_USERNAME/realestate/frontend/dist;
            index index.html;
            try_files $uri $uri/ /index.html;
        }
@@ -248,7 +232,7 @@ Nginx will serve your frontend static files directly and automatically proxy API
 Whenever you finish working locally and push your code to standard GitHub branches, execute these steps on your VM to update the live environment:
 
 ```bash
-cd ~/realestate-website
+cd ~/realestate
 
 # Pull the latest commits securely
 git pull origin main
