@@ -1,5 +1,5 @@
 # ── Stage 1: Build ──────────────────────────
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
@@ -12,12 +12,12 @@ COPY prisma ./prisma
 RUN npx prisma generate
 
 # Copy source and compile TypeScript
-COPY tsconfig.json ./
+COPY tsconfig.json prisma.config.ts ./
 COPY src ./src
 RUN npm run build
 
 # ── Stage 2: Production ────────────────────
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 
 WORKDIR /app
 
@@ -27,7 +27,8 @@ RUN npm ci --omit=dev
 
 # Copy prisma schema + generated client from builder
 COPY prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY prisma.config.ts ./
+COPY --from=builder /app/src/generated ./src/generated
 
 # Copy compiled JS from builder
 COPY --from=builder /app/dist ./dist
