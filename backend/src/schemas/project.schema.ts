@@ -11,6 +11,7 @@ export const CreateProjectSchema = z.object({
   totalCost: MoneySchema,
   estimatedValue: MoneySchema,
   completionDate: z.coerce.date().optional(),
+  galleryUrls: z.array(z.string().url()).max(20).optional(),
 });
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
 

@@ -125,6 +125,20 @@ export async function registerUser(
   return { userId: user.id, message: 'OTP sent to mobile for verification' };
 }
 
+// ━━━━━━━━ CHECK AVAILABILITY ━━━━━━━━
+
+export async function checkAvailability(
+  field: 'email' | 'mobile',
+  value: string,
+): Promise<{ available: boolean }> {
+  const where = field === 'email'
+    ? { email: value, deletedAt: null }
+    : { mobile: value, deletedAt: null };
+
+  const existing = await prisma.user.findFirst({ where });
+  return { available: !existing };
+}
+
 // ━━━━━━━━ LOGIN ━━━━━━━━
 
 export async function loginUser(

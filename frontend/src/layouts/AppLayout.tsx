@@ -77,7 +77,7 @@ export function AppLayout() {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="sidebar-logo">RP</div>
+          <div className="sidebar-logo">∞</div>
           <h2 className="sidebar-brand">Investments</h2>
           <button className="mobile-close" onClick={() => setSidebarOpen(false)}>
             <X size={20} />
@@ -144,7 +144,7 @@ export function AppLayout() {
           <button className="menu-button" onClick={() => setSidebarOpen(true)}>
             <Menu size={24} />
           </button>
-          <div className="mobile-brand">RP Investments</div>
+          <div className="mobile-brand">Infinity Investments</div>
         </header>
         
         <div className="page-container">

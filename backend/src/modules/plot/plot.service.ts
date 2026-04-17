@@ -78,12 +78,13 @@ export async function holdPlot(userId: string, plotId: string) {
     });
 
     let maxHoldValue: number;
+    const MIN_HOLD_VALUE = 50_000_00; // ₹50,000 in paise – floor for new users
     if (membership) {
       const teamLimit = Math.floor(membership.team.teamValue * 0.5);
       const investmentLimit = user.totalInvestment * 10;
-      maxHoldValue = Math.min(teamLimit, investmentLimit);
+      maxHoldValue = Math.max(Math.min(teamLimit, investmentLimit), MIN_HOLD_VALUE);
     } else {
-      maxHoldValue = user.totalInvestment * 10;
+      maxHoldValue = Math.max(user.totalInvestment * 10, MIN_HOLD_VALUE);
     }
 
     // Sum current held plot values

@@ -13,7 +13,7 @@ interface Plot {
   type: string;
   status: string;
   sizeSqft: number;
-  pricePaise: number;
+  price: number;
 }
 
 export default function PlotsPage() {
@@ -44,13 +44,21 @@ export default function PlotsPage() {
     void fetchPlots();
   }, [statusFilter, typeFilter]);
 
+  const [holdingPlotId, setHoldingPlotId] = useState<string | null>(null);
+
   const handleHoldPlot = async (plotId: string) => {
+    if (holdingPlotId) return; // prevent double-click
+    setHoldingPlotId(plotId);
     try {
-      await api.post(`/plots/${plotId}/hold`);
+      await api.post(`/plots/${plotId}/hold`, {
+        idempotencyKey: `hold-${plotId}-${Date.now()}`,
+      });
       toast.success('Plot held successfully for 30 days');
       void fetchPlots();
-    } catch (err) {
-      toast.error('Failed to hold plot. Ensure your account is active.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to hold plot. Ensure your account is active.');
+    } finally {
+      setHoldingPlotId(null);
     }
   };
 
@@ -156,14 +164,14 @@ export default function PlotsPage() {
                     <IndianRupee size={16} color="var(--text-tertiary)" />
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>Price</div>
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{(plot.pricePaise / 100).toLocaleString('en-IN')}</div>
+                      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{(plot.price / 100).toLocaleString('en-IN')}</div>
                     </div>
                   </div>
                 </div>
                 
                 {plot.status === 'AVAILABLE' ? (
-                  <Button fullWidth onClick={() => void handleHoldPlot(plot.id)}>
-                    Hold Plot
+                  <Button fullWidth onClick={() => void handleHoldPlot(plot.id)} disabled={holdingPlotId === plot.id}>
+                    {holdingPlotId === plot.id ? 'Holding…' : 'Hold Plot'}
                   </Button>
                 ) : plot.status === 'HELD' ? (
                   <Button fullWidth variant="secondary" disabled style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>

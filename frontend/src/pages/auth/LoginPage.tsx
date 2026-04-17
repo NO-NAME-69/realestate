@@ -32,9 +32,19 @@ export default function LoginPage() {
       navigate('/dashboard');
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
+        if (err.status === 401) {
+          setError('Invalid email/mobile or password. Please try again.');
+        } else if (err.status === 403) {
+          setError('Your account is suspended. Please contact support.');
+        } else if (err.status === 429) {
+          setError('Too many login attempts. Please wait a moment and try again.');
+        } else if (err.status >= 500) {
+          setError('Our servers are temporarily unavailable. Please try again shortly.');
+        } else {
+          setError(err.message || 'Login failed. Please try again.');
+        }
       } else {
-        setError('Failed to connect to server');
+        setError('Unable to reach the server. Please check your internet connection.');
       }
     } finally {
       setIsLoading(false);
@@ -53,7 +63,19 @@ export default function LoginPage() {
       <CardBody>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {error && (
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: 'var(--border-radius)', fontSize: '0.875rem' }}>
+            <div style={{ 
+              padding: '0.75rem 1rem', 
+              backgroundColor: 'var(--danger-bg)', 
+              color: 'var(--danger)', 
+              borderRadius: 'var(--border-radius)', 
+              fontSize: '0.875rem',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              lineHeight: 1.5
+            }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>⚠</span>
               {error}
             </div>
           )}

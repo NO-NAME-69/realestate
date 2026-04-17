@@ -5,6 +5,10 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
 import rateLimit from '@fastify/rate-limit';
+import fastifyStatic from '@fastify/static';
+import multipart from '@fastify/multipart';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { env } from './config/env.js';
 import { redis } from './config/redis.js';
 import { registerSecurityHeaders } from './middleware/securityHeaders.js';
@@ -39,12 +43,29 @@ export async function buildApp() {
   registerSecurityHeaders(fastify);
 
   // ━━━━━━━━ CORS ━━━━━━━━
+  const allowedOrigins = [env.FRONTEND_URL];
+  if (env.ALLOWED_ORIGINS) {
+    allowedOrigins.push(...env.ALLOWED_ORIGINS.split(',').map(o => o.trim()));
+  }
   await fastify.register(cors, {
-    origin: [env.FRONTEND_URL],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key'],
     credentials: true,
     maxAge: 86400,
+  });
+
+  // ━━━━━━━━ FILE UPLOADS ━━━━━━━━
+  await fastify.register(multipart, {
+    limits: { fileSize: 10 * 1024 * 1024, files: 10 },
+  });
+
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const uploadsDir = path.join(__dirname, '..', 'uploads');
+  await fastify.register(fastifyStatic, {
+    root: uploadsDir,
+    prefix: '/uploads/',
+    decorateReply: false,
   });
 
   // ━━━━━━━━ COOKIES (for refresh token) ━━━━━━━━

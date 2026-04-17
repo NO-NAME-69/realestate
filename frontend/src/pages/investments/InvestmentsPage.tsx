@@ -8,12 +8,13 @@ import toast from 'react-hot-toast';
 interface PortfolioStats {
   totalInvested: number;
   activeInvestments: number;
-  totalRoi: number;
+  totalProfit: number;
+  roi: string;
 }
 
 interface Investment {
   id: string;
-  amountPaise: number;
+  amount: number;
   status: string;
   projectId: string;
   createdAt: string;
@@ -21,7 +22,7 @@ interface Investment {
 }
 
 export default function InvestmentsPage() {
-  const [stats, setStats] = useState<PortfolioStats>({ totalInvested: 0, activeInvestments: 0, totalRoi: 0 });
+  const [stats, setStats] = useState<PortfolioStats>({ totalInvested: 0, activeInvestments: 0, totalProfit: 0, roi: '0.00' });
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -29,7 +30,7 @@ export default function InvestmentsPage() {
     const fetchData = async () => {
       try {
         const [portfolioRes, listRes] = await Promise.all([
-          api.get<{ data: PortfolioStats }>('/investments/portfolio').catch(() => ({ data: { totalInvested: 0, activeInvestments: 0, totalRoi: 0 }})),
+          api.get<{ data: PortfolioStats }>('/investments/portfolio').catch(() => ({ data: { totalInvested: 0, activeInvestments: 0, totalProfit: 0, roi: '0.00' }})),
           api.get<{ data: Investment[] }>('/investments').catch(() => ({ data: [] }))
         ]);
         
@@ -70,7 +71,7 @@ export default function InvestmentsPage() {
               <TrendingUp size={18} /> Total Returns
             </div>
             <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--success)' }}>
-              +{isLoading ? '...' : formatCurrency(stats.totalRoi)}
+              +{isLoading ? '...' : formatCurrency(stats.totalProfit)}
             </div>
           </CardBody>
         </Card>
@@ -118,7 +119,7 @@ export default function InvestmentsPage() {
                         {new Date(inv.createdAt).toLocaleDateString()}
                       </td>
                       <td style={{ padding: '1rem 1.5rem', fontWeight: 600 }}>
-                        {formatCurrency(inv.amountPaise)}
+                        {formatCurrency(inv.amount)}
                       </td>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <span style={{ 

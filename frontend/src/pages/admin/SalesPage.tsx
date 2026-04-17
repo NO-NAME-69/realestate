@@ -82,6 +82,7 @@ export default function SalesPage() {
     try {
       const user = users.find(u => u.id === selectedBuyer);
       await api.post('/admin/sales', {
+        idempotencyKey: `sale-${selectedPlot}-${Date.now()}`,
         data: {
           plot_id: selectedPlot,
           buyer_name: user?.fullName || 'Unknown',
@@ -95,12 +96,13 @@ export default function SalesPage() {
       toast.success('Sale recorded successfully!');
       
       // Reload sales
-      const salesRes = await api.get('/admin/sales');
-      setStats(salesRes.data.stats);
-      setRecentSales(salesRes.data.data);
+      const salesRes: any = await api.get('/admin/sales');
+      setStats(salesRes.stats);
+      setRecentSales(salesRes.data);
       
       // Re-trigger plot load to remove sold plot
-      setSelectedProject(selectedProject);
+      setSelectedProject(prev => { setSelectedProject(''); return prev; });
+      setTimeout(() => setSelectedProject(selectedProject), 50);
     } catch (err: any) {
       toast.error(err.message || 'Failed to record sale');
     } finally {
@@ -157,7 +159,7 @@ export default function SalesPage() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 500 }}>Sale Price (₹)</label>
-                <input type="text" value={Number(salePrice / 100).toLocaleString('en-IN')} readOnly style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', outline: 'none' }} />
+                <input type="number" value={salePrice / 100} onChange={(e) => setSalePrice(Math.round(Number(e.target.value) * 100))} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', outline: 'none' }} />
               </div>
             </div>
 

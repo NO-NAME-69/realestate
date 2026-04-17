@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { api, ApiError } from '../../lib/api';
+import { formatCurrency } from '../../lib/utils';
 import { Card, CardBody, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import toast from 'react-hot-toast';
-import { Wallet as WalletIcon, ArrowUpRight, ArrowDownRight, IndianRupee } from 'lucide-react';
+import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, IndianRupee } from 'lucide-react';
 
 // Load Razorpay dynamically
 const loadRazorpay = () => {
@@ -30,25 +31,52 @@ interface TopupResponse {
   };
 }
 
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  status: string;
+  description: string | null;
+  createdAt: string;
+}
+
+const txnTypeLabel: Record<string, string> = {
+  ADMIN_CREDIT: 'Admin Credit',
+  WALLET_TOPUP: 'Top-up',
+  INVESTMENT_DEBIT: 'Investment',
+  PROFIT_CREDIT: 'Profit',
+  WITHDRAWAL: 'Withdrawal',
+  REFUND: 'Refund',
+  REGISTRATION_FEE: 'Registration Fee',
+  ADMIN_DEBIT: 'Admin Debit',
+};
+
+const isCreditType = (type: string) => ['ADMIN_CREDIT', 'WALLET_TOPUP', 'PROFIT_CREDIT', 'REFUND'].includes(type);
+
 export default function WalletPage() {
   const [balance, setBalance] = useState<number>(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTopupLoading, setIsTopupLoading] = useState(false);
   const [topupAmount, setTopupAmount] = useState('');
 
-  const fetchBalance = async () => {
+  const fetchData = async () => {
     try {
-      const res = await api.get<{ data: WalletData }>('/wallet/balance');
-      setBalance(res.data.balance);
+      const [balRes, txnRes] = await Promise.all([
+        api.get<{ data: WalletData }>('/wallet/balance'),
+        api.get<{ data: Transaction[] }>('/wallet/transactions').catch(() => ({ data: [] as Transaction[] })),
+      ]);
+      setBalance(balRes.data.balance);
+      setTransactions(txnRes.data || []);
     } catch (err) {
-      toast.error('Failed to fetch wallet balance');
+      toast.error('Failed to fetch wallet data');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    void fetchBalance();
+    void fetchData();
   }, []);
 
   const handleTopup = async (e: React.FormEvent) => {
@@ -77,7 +105,7 @@ export default function WalletPage() {
         key: res.data.razorpay_key_id,
         amount: res.data.amount_paise,
         currency: 'INR',
-        name: 'RP Investments',
+        name: 'Infinity Reality ',
         description: 'Wallet Topup',
         order_id: res.data.order_id,
         handler: async function (response: any) {
@@ -90,7 +118,7 @@ export default function WalletPage() {
               },
             });
             toast.success('Wallet topped up successfully!');
-            void fetchBalance();
+            void fetchData();
             setTopupAmount('');
           } catch (err) {
             toast.error(err instanceof ApiError ? err.message : 'Payment verification failed');
@@ -134,7 +162,7 @@ export default function WalletPage() {
                 `₹${(balance / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
               )}
             </div>
-            
+
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
               <Button style={{ flex: 1 }} variant="ghost" disabled>Withdraw</Button>
             </div>
@@ -168,14 +196,56 @@ export default function WalletPage() {
           </CardBody>
         </Card>
       </div>
-      
-      {/* Transaction History Placeholder */}
+
+      {/* Transaction History */}
       <h2 style={{ marginTop: '1rem', fontSize: '1.5rem' }}>Transaction History</h2>
       <Card glass>
-        <CardBody>
-          <div style={{ color: 'var(--text-tertiary)', textAlign: 'center', padding: '2rem' }}>
-            No transactions found yet.
-          </div>
+        <CardBody style={{ padding: 0 }}>
+          {transactions.length === 0 ? (
+            <div style={{ color: 'var(--text-tertiary)', textAlign: 'center', padding: '2rem' }}>
+              No transactions found yet.
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                    <th style={{ padding: '1rem 1.5rem' }}>Type</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Description</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Date</th>
+                    <th style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((txn) => (
+                    <tr key={txn.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {isCreditType(txn.type) ? (
+                            <ArrowDownLeft size={16} color="var(--success)" />
+                          ) : (
+                            <ArrowUpRight size={16} color="var(--accent-gold)" />
+                          )}
+                          <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                            {txnTypeLabel[txn.type] || txn.type}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                        {txn.description || '—'}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                        {new Date(txn.createdAt).toLocaleDateString()}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem', textAlign: 'right', fontWeight: 700, fontFamily: 'monospace', color: isCreditType(txn.type) ? 'var(--success)' : 'var(--accent-gold)' }}>
+                        {isCreditType(txn.type) ? '+' : '-'}{formatCurrency(txn.amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardBody>
       </Card>
     </div>

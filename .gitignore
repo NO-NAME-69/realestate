@@ -33,3 +33,10 @@ frontend_backup/
 
 # Misc
 .antigravityignore
+
+# Debug output files
+*.out
+backend/out.txt
+
+# Uploads
+backend/uploads/

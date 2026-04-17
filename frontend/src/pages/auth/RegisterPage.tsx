@@ -29,6 +29,29 @@ export default function RegisterPage() {
     if (fieldErrors[e.target.name]) {
       setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
     }
+    if (error) setError(null);
+  };
+
+  // Real-time check: is email/mobile already taken?
+  const checkField = async (field: 'email' | 'mobile', value: string) => {
+    if (!value.trim()) return;
+    // Basic format validation before hitting the API
+    if (field === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return;
+    if (field === 'mobile' && !/^\d{10}$/.test(value)) return;
+
+    try {
+      const res = await api.get<{ data: { available: boolean } }>(
+        `/auth/check-availability?field=${field}&value=${encodeURIComponent(value.trim())}`
+      );
+      if (!res.data.available) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [field]: `This ${field} is already registered. Please sign in.`,
+        }));
+      }
+    } catch {
+      // silently ignore — the full validation happens on submit
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,11 +77,21 @@ export default function RegisterPage() {
       if (err instanceof ApiError) {
         if (err.fields) {
           setFieldErrors(err.fields);
+          setError('Please fix the highlighted fields below.');
+        } else if (err.status === 409) {
+          // Duplicate email/mobile
+          setError('This email or mobile number is already registered. Please sign in instead.');
+        } else if (err.status === 422) {
+          setError(err.message || 'Please check your inputs and try again.');
+        } else if (err.status === 429) {
+          setError('Too many attempts. Please wait a moment and try again.');
+        } else if (err.status >= 500) {
+          setError('Our servers are temporarily unavailable. Please try again shortly.');
         } else {
-          setError(err.message);
+          setError(err.message || 'Registration failed. Please try again.');
         }
       } else {
-        setError('Failed to connect to server');
+        setError('Unable to reach the server. Please check your internet connection and try again.');
       }
     } finally {
       setIsLoading(false);
@@ -77,8 +110,25 @@ export default function RegisterPage() {
       <CardBody>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {error && (
-            <div style={{ padding: '0.75rem', backgroundColor: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: 'var(--border-radius)', fontSize: '0.875rem' }}>
-              {error}
+            <div style={{ 
+              padding: '0.75rem 1rem', 
+              backgroundColor: 'var(--danger-bg)', 
+              color: 'var(--danger)', 
+              borderRadius: 'var(--border-radius)', 
+              fontSize: '0.875rem',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.5rem',
+              lineHeight: 1.5
+            }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0, marginTop: '1px' }}>⚠</span>
+              <span>
+                {error}
+                {error.includes('already registered') && (
+                  <> <Link to="/login" style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>Sign In →</Link></>
+                )}
+              </span>
             </div>
           )}
           
@@ -102,6 +152,7 @@ export default function RegisterPage() {
               placeholder="john@example.com"
               value={formData.email}
               onChange={handleChange}
+              onBlur={() => checkField('email', formData.email)}
               error={fieldErrors.email}
               required
               leftIcon={<Mail size={18} />}
@@ -114,6 +165,7 @@ export default function RegisterPage() {
               placeholder="e.g. 9876543210"
               value={formData.mobile}
               onChange={handleChange}
+              onBlur={() => checkField('mobile', formData.mobile)}
               error={fieldErrors.mobile}
               required
               leftIcon={<Phone size={18} />}

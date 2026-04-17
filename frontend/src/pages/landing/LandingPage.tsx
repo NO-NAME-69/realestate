@@ -137,8 +137,8 @@ export default function LandingPage() {
       {/* ── Navbar ──────────────────────────── */}
       <nav className={`landing-nav ${scrolled ? 'scrolled' : ''}`} id="landing-nav">
         <div className="nav-brand">
-          <div className="nav-logo">RP</div>
-          <span className="nav-brand-text">RP Investments</span>
+          <div className="nav-logo">∞</div>
+          <span className="nav-brand-text">Infinity Reality</span>
         </div>
 
         <div className="nav-links">
@@ -332,7 +332,7 @@ export default function LandingPage() {
           </div>
           <h2 className="section-title">Trusted by Investors Across India</h2>
           <p className="section-subtitle">
-            Real stories from real investors who are building wealth with RP Investments.
+            Real stories from real investors who are building wealth with Infinity Investments.
           </p>
 
           <div className="testimonials-grid">
@@ -382,8 +382,8 @@ export default function LandingPage() {
         <div className="footer-main">
           <div className="footer-brand">
             <div className="nav-brand">
-              <div className="nav-logo">RP</div>
-              <span className="nav-brand-text">RP Investments</span>
+              <div className="nav-logo">∞</div>
+              <span className="nav-brand-text">Infinity Reality</span>
             </div>
             <p>
               A premium property investment platform enabling transparent, team-based
@@ -423,7 +423,7 @@ export default function LandingPage() {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; {new Date().getFullYear()} RP Investments. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Infinity Investments. All rights reserved.</p>
           <div className="footer-bottom-links">
             <a href="#">Privacy</a>
             <a href="#">Terms</a>

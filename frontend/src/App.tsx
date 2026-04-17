@@ -14,6 +14,7 @@ const VerifyOTPPage = React.lazy(() => import('./pages/auth/VerifyOTPPage'));
 const DashboardPage = React.lazy(() => import('./pages/dashboard/DashboardPage'));
 const WalletPage = React.lazy(() => import('./pages/wallet/WalletPage'));
 const ProjectsPage = React.lazy(() => import('./pages/projects/ProjectsPage'));
+const ProjectDetailPage = React.lazy(() => import('./pages/projects/ProjectDetailPage'));
 const InvestmentsPage = React.lazy(() => import('./pages/investments/InvestmentsPage'));
 const PlotsPage = React.lazy(() => import('./pages/plots/PlotsPage'));
 const TeamPage = React.lazy(() => import('./pages/team/TeamPage'));
@@ -53,6 +54,7 @@ function App() {
               <Route path="/wallet" element={<React.Suspense fallback={null}><WalletPage /></React.Suspense>} />
               <Route path="/investments" element={<React.Suspense fallback={null}><InvestmentsPage /></React.Suspense>} />
               <Route path="/projects" element={<React.Suspense fallback={null}><ProjectsPage /></React.Suspense>} />
+              <Route path="/projects/:id" element={<React.Suspense fallback={null}><ProjectDetailPage /></React.Suspense>} />
               <Route path="/plots" element={<React.Suspense fallback={null}><PlotsPage /></React.Suspense>} />
               <Route path="/team" element={<React.Suspense fallback={null}><TeamPage /></React.Suspense>} />
               <Route path="/admin" element={<React.Suspense fallback={null}><AdminDashboard /></React.Suspense>} />

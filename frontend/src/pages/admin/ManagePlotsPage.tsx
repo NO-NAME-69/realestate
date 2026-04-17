@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { api } from '../../lib/api';
@@ -22,11 +23,12 @@ interface ProjectOption {
 }
 
 export function AdminManagePlotsPage() {
+  const [searchParams] = useSearchParams();
   const [plots, setPlots] = useState<Plot[]>([]);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterProject, setFilterProject] = useState('ALL');
+  const [filterProject, setFilterProject] = useState(searchParams.get('projectId') || 'ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
 
   useEffect(() => {

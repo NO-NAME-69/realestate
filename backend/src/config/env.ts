@@ -40,6 +40,7 @@ const EnvSchema = z.object({
 
   // Frontend
   FRONTEND_URL: z.string().min(1),
+  ALLOWED_ORIGINS: z.string().optional(),
 
   // Business config
   COMPANY_PROFIT_PCT: z.coerce.number().min(0).max(100).default(30),

@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-rp_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-rp_secure_password_2026}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-rp_module}
     volumes:
       - rp_pgdata:/var/lib/postgresql/data
@@ -52,7 +52,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: postgresql://${DB_USER:-rp_user}:${DB_PASSWORD:-rp_secure_password_2026}@postgres:5432/${DB_NAME:-rp_module}
+      DATABASE_URL: postgresql://${DB_USER:-rp_user}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-rp_module}
       REDIS_URL: redis://redis:6379
     depends_on:
       postgres:

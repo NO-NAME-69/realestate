@@ -8,6 +8,7 @@ import {
   refreshAccessToken,
   logoutUser,
   verifyMobileOTP,
+  checkAvailability,
 } from './auth.service.js';
 import type {
   RegisterInput,
@@ -107,4 +108,23 @@ export async function verifyOTPController(
     return;
   }
   void reply.send({ data: { message: 'Mobile verified successfully' } });
+}
+
+export async function checkAvailabilityController(
+  request: FastifyRequest<{ Querystring: { field: string; value: string } }>,
+  reply: FastifyReply,
+): Promise<void> {
+  const { field, value } = request.query;
+
+  if (field !== 'email' && field !== 'mobile') {
+    void reply.code(400).send({ error: 'field must be email or mobile' });
+    return;
+  }
+  if (!value || value.trim().length === 0) {
+    void reply.code(400).send({ error: 'value is required' });
+    return;
+  }
+
+  const result = await checkAvailability(field, value.trim());
+  void reply.send({ data: result });
 }

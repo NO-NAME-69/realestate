@@ -12,8 +12,8 @@ export function AuthLayout() {
 
       <div className="auth-container">
         <div className="auth-logo-container">
-          <div className="auth-logo">RP</div>
-          <h1 className="auth-title">RP Investments</h1>
+          <div className="auth-logo">∞</div>
+          <h1 className="auth-title">Infinity Investments</h1>
           <p className="auth-subtitle">Premium Property Investment Platform</p>
         </div>
         

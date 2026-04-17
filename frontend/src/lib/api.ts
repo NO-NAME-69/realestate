@@ -1,5 +1,5 @@
 // src/lib/api.ts
-const API_BASE = 'http://localhost:3000/api/v1';
+const API_BASE = '/api/v1';
 
 export class ApiError extends Error {
   status: number;
@@ -37,7 +37,7 @@ async function request<T>(endpoint: string, options: FetchOptions = {}): Promise
   const token = localStorage.getItem('rp_access_token');
   
   const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && !(options.data instanceof FormData)) {
+  if (!headers.has('Content-Type') && options.data && !(options.data instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
   

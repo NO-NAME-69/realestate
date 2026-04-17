@@ -8,6 +8,7 @@ import {
   refreshController,
   logoutController,
   verifyOTPController,
+  checkAvailabilityController,
 } from './auth.controller.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { validateBody } from '../../middleware/validate.js';
@@ -24,6 +25,11 @@ export async function authRoutes(fastify: FastifyInstance): Promise<void> {
     preHandler: [validateBody(RegisterSchema)],
     handler: registerController,
     config: { rateLimit: { max: 10, timeWindow: '1 hour' } },
+  });
+
+  fastify.get('/check-availability', {
+    handler: checkAvailabilityController,
+    config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
   });
 
   fastify.post('/login', {

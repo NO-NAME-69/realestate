@@ -14,6 +14,7 @@ interface Project {
   status: string;
   totalAreaSqft: number | null;
   estimatedValue: number;
+  galleryUrls: string[];
 }
 
 export default function ProjectsPage() {
@@ -67,14 +68,30 @@ export default function ProjectsPage() {
               <div 
                 style={{ 
                   height: '180px', 
+                  position: 'relative',
+                  overflow: 'hidden',
                   backgroundColor: 'var(--bg-tertiary)', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center',
-                  background: 'linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(201, 168, 76, 0.1) 100%)'
+                  background: project.galleryUrls?.length > 0 ? 'transparent' : 'linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(201, 168, 76, 0.1) 100%)'
                 }}
               >
-                <Building size={48} color="var(--accent-gold)" opacity={0.5} />
+                {project.galleryUrls?.length > 0 ? (
+                  <>
+                    <img
+                      src={project.galleryUrls[0]}
+                      alt={project.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%)',
+                    }} />
+                  </>
+                ) : (
+                  <Building size={48} color="var(--accent-gold)" opacity={0.5} />
+                )}
               </div>
               
               <CardBody style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
